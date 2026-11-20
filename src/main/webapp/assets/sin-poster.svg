@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="450" viewBox="0 0 300 450">
+  <rect width="300" height="450" fill="#161828"/>
+  <rect x="12" y="12" width="276" height="426" fill="none" stroke="#E50914" stroke-opacity="0.35" stroke-width="2"/>
+  <text x="150" y="215" text-anchor="middle" font-family="Georgia, serif" font-size="34" font-weight="700" fill="#ffffff">Cine<tspan fill="#E50914">Verse</tspan></text>
+  <text x="150" y="255" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" letter-spacing="3" fill="#8a8fa3">SIN IMAGEN</text>
+</svg>

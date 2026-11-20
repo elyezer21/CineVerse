@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mi Perfil — CineVerse</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    /* Reset general y variables de color/tipografía usadas en toda la página */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    /* Variables de toda la web: paleta de colores y tipografías */
+    :root {
+      --red:      #E50914; /* Rojo principal de acento (botones, alertas, marca) */
+      --red-dim:  #8B0000; /* Rojo oscuro/apagado para variantes hover o sombreado */
+      --gold:     #C9A84C; /* Dorado principal (bordes, detalles premium) */
+      --gold-lt:  #F0D080; /* Dorado claro (hover, brillos) */
+      --bg:       #060810; /* Fondo principal, casi negro */
+      --bg2:      #0D0F1A; /* Fondo secundario, un poco más claro */
+      --bg3:      #12142200; /* Fondo terciario, con canal alpha en 00 (transparente) */
+      --surface:  #161828; /* Color de superficie para tarjetas/paneles */
+      --surface2: #1E2038; /* Superficie secundaria, un tono más claro */
+      --white:    #F4F4F0; /* Blanco cálido para texto principal */
+      --gray:     #8888AA; /* Gris para texto secundario */
+      --gray-lt:  #BBBBCC; /* Gris claro para texto terciario o placeholders */
+      --font-display: 'Cormorant Garamond', serif; /* Tipografía para títulos (serif elegante) */
+      --font-body:    'Outfit', sans-serif; /* Tipografía para cuerpo de texto (sans-serif) */
+    }
+
+    /* Hace un desplazamiento suave al hacer clic a una seccion de la misma página */
+    html { scroll-behavior: smooth; }
+
+    /* Estilos base del body de la página */
+    body {
+      background: var(--bg);
+      color: var(--white);
+      font-family: var(--font-body);
+      font-weight: 300;
+      overflow-x: hidden;
+    }
+
+    /* Capa de ruido sutil para dar textura al fondo */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      opacity: 0.035;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Barra de navegacion centrada */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0;
+      z-index: 1000;
+      padding: 0 5%;
+      height: 72px;
+      display: flex; align-items: center; justify-content: space-between;
+      transition: background 0.5s, backdrop-filter 0.5s, border-color 0.5s;
+      border-bottom: 1px solid transparent;
+      background: rgba(6,8,16,0.85);
+      backdrop-filter: blur(20px);
+      border-color: rgba(201,168,76,0.12);
+    }
+
+    /* Titulo "CineVerse" a la izquierda de la barra de navegacion */
+    .nav-logo {
+      font-family: var(--font-display);
+      font-size: 1.9rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      color: var(--white);
+      text-decoration: none;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .nav-logo span { color: var(--red); } /* La palabra "Verse" se resalta en rojo */
+
+    /* Lista de enlaces de navegación (Home, Catálogo y Sobre Nosotros) */
+    .nav-links {
+      display: flex; align-items: center; gap: 2.5rem;
+      list-style: none;
+    }
+    /* Estilos de las listas de enlaces de navegación */
+    .nav-links a {
+      color: var(--gray-lt);
+      text-decoration: none;
+      font-size: 0.82rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      position: relative;
+      transition: color 0.3s;
+    }
+    /* Línea dorada que aparece debajo del enlace al pasar el mouse */
+    .nav-links a::after {
+      content: '';
+      position: absolute; bottom: -4px; left: 0;
+      width: 0; height: 1px;
+      background: var(--gold);
+      transition: width 0.35s ease;
+    }
+    .nav-links a:hover { color: var(--white); }
+    .nav-links a:hover::after { width: 100%; }
+
+    /* Botón rojo de acción en la navbar (no se usa en esta página) */
+    .nav-cta {
+      background: var(--red);
+      color: var(--white) !important;
+      padding: 0.5rem 1.4rem;
+      border-radius: 2px;
+      letter-spacing: 0.12em;
+      transition: background 0.3s, transform 0.2s !important;
+      cursor: pointer;
+      border: none;
+    }
+    .nav-cta::after { display: none !important; }
+    .nav-cta:hover { background: #ff1a26 !important; transform: translateY(-1px); }
+
+    /* Contenedor principal: cabecera de perfil + pestañas de favoritos/configuración */
+    main {
+      padding: 100px 5% 50px;
+      position: relative;
+      z-index: 1;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    /* Cabecera de perfil: avatar + nombre + estadísticas + botones */
+    .profile-header {
+      display: grid;
+      grid-template-columns: 200px 1fr;
+      gap: 3rem;
+      align-items: center;
+      margin-bottom: 4rem;
+      padding-bottom: 3rem;
+      border-bottom: 1px solid rgba(201, 168, 76, 0.1);
+      animation: slideUp 0.8s ease;
+    }
+
+    /* Animación de aparición de la cabecera de perfil */
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Avatar circular con emoji de usuario por defecto */
+    .profile-avatar {
+      width: 200px;
+      height: 200px;
+      background: linear-gradient(135deg, rgba(229, 9, 20, 0.2), rgba(201, 168, 76, 0.1));
+      border: 2px solid rgba(201, 168, 76, 0.3);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 4rem;
+    }
+    
+    /* Informacion del perfil */
+    .profile-info h1 {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      letter-spacing: 0.05em;
+    }
+
+    /* Resalta el nombre de usuario en dorado y cursiva */
+    .profile-info h1 em {
+      color: var(--gold);
+      font-style: italic;
+    }
+    
+    /* Email del usuario mostrado en el perfil */
+    .profile-email {
+      color: var(--gray);
+      font-size: 1rem;
+      letter-spacing: 0.1em;
+      margin-bottom: 1.5rem;
+    }
+
+    /* Fila de estadísticas (cantidad de favoritos) */
+    .profile-stats {
+      display: flex;
+      gap: 3rem;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+    }
+
+    /* Contenedor de número y etiqueta de los favoritos */
+    .stat {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+    
+    /* Número destacado en color dorado */
+    .stat-number {
+      font-family: var(--font-display);
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--gold);
+    }
+
+    /* Etiqueta descriptiva debajo del número (Peliculas en favoritos) */
+    .stat-label {
+      font-size: 0.85rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--gray);
+    }
+
+    /* Botones "Ver Favoritos" y "Configuración" */
+    .profile-actions {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    /* Botón rojo principal (Ver Favoritos) */
+    .btn-primary {
+      padding: 0.8rem 1.8rem;
+      background: var(--red);
+      color: var(--white);
+      border: none;
+      border-radius: 2px;
+      font-family: var(--font-body);
+      font-size: 0.9rem;
+      letter-spacing: 0.1em;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-weight: 500;
+    }
+
+     /* Efecto del boton rojo principal (Ver Favoritos) */
+    .btn-primary:hover {
+      background: #ff1a26;
+      transform: translateY(-2px);
+    }
+
+    /* Botón secundario con borde dorado (Configuracion) */
+    .btn-secondary {
+      padding: 0.8rem 1.8rem;
+      background: transparent;
+      color: var(--gray-lt);
+      border: 1px solid rgba(201, 168, 76, 0.3);
+      border-radius: 2px;
+      font-family: var(--font-body);
+      font-size: 0.9rem;
+      letter-spacing: 0.1em;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-weight: 500;
+    }
+
+    /* Botón secundario con borde dorado (Configuracion) */
+    .btn-secondary:hover {
+      border-color: var(--gold);
+      color: var(--white);
+      background: rgba(201, 168, 76, 0.1);
+    }
+
+    /* Pestañas "Mis Favoritos" y "Configuración" */
+    .tabs {
+      display: flex;
+      gap: 2rem;
+      margin-bottom: 3rem;
+      border-bottom: 1px solid rgba(201, 168, 76, 0.1);
+      animation: slideUp 0.8s ease 0.1s forwards;
+      opacity: 0;
+    }
+
+    .tab-btn {
+      padding: 1rem 0;
+      background: none;
+      border: none;
+      color: var(--gray);
+      font-family: var(--font-body);
+      font-size: 0.95rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+      position: relative;
+      transition: color 0.3s ease;
+      font-weight: 500;
+    }
+
+    /* Línea roja debajo de la pestaña activa */
+    .tab-btn::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: var(--red);
+      transition: width 0.3s ease;
+    }
+
+    .tab-btn:hover { color: var(--white); }
+    .tab-btn.active { color: var(--white); }
+    .tab-btn.active::after { width: 100%; }
+
+    /* Contenido de cada pestaña, oculto salvo que tenga la clase "active" */
+    .tab-content {
+      display: none;
+      animation: fadeIn 0.5s ease;
+    }
+
+    .tab-content.active { display: block; }
+
+    /* Animación de aparición al cambiar de pestaña */
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    /* Cuadricula de tarjetas de películas favoritas */
+    .favorites-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 2rem;
+      margin-bottom: 3rem;
+    }
+
+    /* Tarjeta individual de favorito, con animación de entrada */
+    .fav-card {
+      position: relative;
+      cursor: pointer;
+      animation: cardReveal 0.6s ease forwards;
+      opacity: 0;
+    }
+
+    /* Animación de las tarjetas de favoritos deslizándose hacia arriba */
+    @keyframes cardReveal {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Imagenes de las tarjetas de los favoritos */
+    .fav-card img {
+      width: 100%;
+      height: 280px;
+      object-fit: cover;
+      border-radius: 2px;
+      transition: all 0.3s ease;
+      display: block;
+    }
+
+    /* Título de la película, limitado a 2 líneas */
+    .fav-title {
+      margin-top: 0.8rem;
+      font-family: var(--font-display);
+      font-size: 1rem;
+      font-weight: 600;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    /* Mensaje mostrado cuando no hay películas favoritas */
+    .empty-state {
+      text-align: center;
+      padding: 3rem;
+      color: var(--gray);
+    }
+
+    /* Mensaje mas pequeño mostrado cuando no hay películas favoritas */
+    .empty-state h3 {
+      font-family: var(--font-display);
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      color: var(--gold);
+    }
+
+    /* Pestaña de configuración: zona de "Peligro" (eliminar cuenta) */
+    .settings-form { max-width: 600px; }
+
+    /* Color del boton (Eliminar) */
+    .setting-group {
+      margin-bottom: 2rem;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid rgba(201, 168, 76, 0.1);
+      animation: slideUp 0.8s ease forwards;
+      opacity: 0;
+    }
+
+    /* Efecto del boton (Eliminar) */
+    .setting-group:nth-child(1) { animation-delay: 0.2s; }
+
+    .setting-group h3 {
+      font-family: var(--font-display);
+      font-size: 1.3rem;
+      margin-bottom: 1rem;
+      color: var(--gold);
+    }
+
+    /* Fila con la etiqueta de la opción y botón  */
+    .setting-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.5rem;
+      padding: 1rem;
+      background: rgba(22, 24, 40, 0.3);
+      border-radius: 2px;
+    }
+
+    .setting-label {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+
+    .setting-label strong { color: var(--white); font-weight: 500; }
+    .setting-label small  { color: var(--gray); font-size: 0.85rem; }
+
+  /* Modal de confirmación para eliminar la cuenta: pide escribir frase exacta */
+     /* Fondo oscuro que cubre toda la pantalla, oculto por defecto */
+    .delete-modal-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.85);
+      z-index: 9000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Muestra el overlay (capa) cuando presiona el boton de eliminar */
+    .delete-modal-overlay.open {
+      display: flex;
+    }
+
+    /* Caja central del modal de confirmación de borrado */
+    .delete-modal-box {
+      background: #0D0F1A;
+      border: 1px solid rgba(229, 9, 20, 0.4);
+      border-radius: 6px;
+      padding: 2.5rem;
+      max-width: 440px;
+      width: 90%;
+      box-shadow: 0 0 40px rgba(229, 9, 20, 0.15);
+      animation: slideUp 0.4s ease;
+    }
+
+    /* Título del modal en color rojo */
+    .delete-modal-box h2 {
+      font-family: var(--font-display);
+      font-size: 1.8rem;
+      color: var(--red);
+      margin-bottom: 0.5rem;
+      letter-spacing: 0.05em;
+    }
+
+    /* Descripcion del modal */
+    .delete-modal-box p {
+      color: var(--gray-lt);
+      font-size: 0.95rem;
+      margin-bottom: 1.5rem;
+      line-height: 1.6;
+    }
+
+    /* Resaltado de palabras clave dentro del texto */
+    .delete-modal-box p strong { color: var(--white); }
+    .delete-modal-box p .keyword { color: var(--red); font-weight: 600; }
+
+    /* Campo donde el usuario escribe la frase de confirmación */
+    .delete-modal-input {
+      width: 100%;
+      padding: 0.85rem 1rem;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(201, 168, 76, 0.25);
+      border-radius: 3px;
+      color: var(--white);
+      font-family: var(--font-body);
+      font-size: 0.95rem;
+      outline: none;
+      margin-bottom: 1.5rem;
+      transition: border-color 0.3s;
+    }
+
+    /* Borde rojo cuando el texto escrito coincide con la frase exacta */
+    .delete-modal-input.valid {
+      border-color: rgba(229, 9, 20, 0.6);
+    }
+
+    /* Texto que muestra el campo (lo que debes escribir) */
+    .delete-modal-input::placeholder { color: var(--gray); }
+
+    .delete-modal-actions {
+      display: flex;
+      gap: 1rem;
+    }
+
+    /* Botón de confirmar eliminación: deshabilitado hasta escribir la frase */
+    .btn-confirm-delete {
+      flex: 1;
+      padding: 0.85rem;
+      background: var(--red);
+      color: white;
+      border: none;
+      border-radius: 3px;
+      font-family: var(--font-body);
+      font-size: 0.9rem;
+      letter-spacing: 0.1em;
+      cursor: not-allowed;
+      opacity: 0.4;
+      transition: all 0.3s;
+      font-weight: 500;
+    }
+
+    /* Se habilita cuando el input contiene la frase exacta de confirmación */
+    .btn-confirm-delete.enabled {
+      opacity: 1;
+      cursor: pointer;
+    }
+
+    /* Efecto del boton cuando pasa el mouse por encima */
+    .btn-confirm-delete.enabled:hover {
+      background: #ff1a26;
+      transform: translateY(-1px);
+    }
+
+    /* Botón de cancelar y cerrar el modal */
+    .btn-cancel-delete {
+      flex: 1;
+      padding: 0.85rem;
+      background: transparent;
+      color: var(--gray-lt);
+      border: 1px solid rgba(201, 168, 76, 0.3);
+      border-radius: 3px;
+      font-family: var(--font-body);
+      font-size: 0.9rem;
+      letter-spacing: 0.1em;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-weight: 500;
+    }
+
+    /* Efecto del boton de cancelar */
+    .btn-cancel-delete:hover {
+      border-color: var(--gold);
+      color: var(--white);
+      background: rgba(201, 168, 76, 0.08);
+    }
+
+    /* Pie de página con menú secundario, copyright y logout */
+    footer {
+      background: rgba(6, 8, 16, 0.5);
+      border-top: 1px solid rgba(201, 168, 76, 0.1);
+      padding: 2rem;
+      text-align: center;
+      color: var(--gray);
+      font-size: 0.85rem;
+      position: relative;
+      z-index: 1;
+      margin-top: 4rem;
+    }
+
+    footer a {
+      color: var(--gold);
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+
+    footer a:hover { color: var(--white); }
+
+/* Botón de cerrar sesión - redirige al loggin */
+.logout-btn:hover { color: var(--red) !important; border-color: var(--red) !important; }
+
+/* Ícono de búsqueda que enlaza a Google.com en la barra de navegacion */
+.nav-search {
+  color: var(--gray-lt);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  transition: color 0.3s;
+}
+.nav-search:hover { color: var(--gold); }
+.nav-search svg { width: 20px; height: 20px; }
+
+/* Ícono de redes sociales en la barra de navegacion */
+.nav-social { display: flex; align-items: center; gap: 0.9rem; margin-left: 1.5rem; margin-right: 0.6rem; }
+.nav-social a { color: #BBBBCC; display: flex; transition: color 0.3s; }
+.nav-social a:hover { color: var(--gold); }
+.nav-social svg { width: 18px; height: 18px; }
+  
+    /* ---- Responsivo del perfil ---- */
+    @media (max-width: 760px) {
+      main { padding: 96px 5% 40px; }
+      .profile-header { grid-template-columns: 1fr; gap: 1.5rem; text-align: center; justify-items: center; }
+      .profile-avatar { width: 120px; height: 120px; font-size: 3rem; }
+      .profile-stats, .profile-actions { justify-content: center; flex-wrap: wrap; }
+      .tabs { overflow-x: auto; }
+      .favorites-grid { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+      .setting-item { flex-direction: column; align-items: flex-start; gap: 1rem; }
+    }
+
+    /* ---- Tarjetas de favoritos ---- */
+    .favorites-grid .movie-card {
+      background: var(--surface, #0D0F1A); border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 6px; overflow: hidden; display: flex; flex-direction: column;
+      transition: border-color 0.3s, transform 0.3s;
+    }
+    .favorites-grid .movie-card:hover { border-color: rgba(201,168,76,0.35); transform: translateY(-3px); }
+    .favorites-grid .movie-card img { width: 100%; aspect-ratio: 2/3; object-fit: cover; display: block; }
+    .favorites-grid .movie-info { padding: 0.9rem 1rem 1.1rem; display: flex; flex-direction: column; gap: 0.6rem; }
+    .favorites-grid .movie-info h4 { font-family: var(--font-display); font-size: 1.1rem; font-weight: 600; line-height: 1.25; margin: 0; }
+    .favorites-grid .movie-info button {
+      align-self: flex-start; margin-top: 0 !important; padding: 0.45rem 1rem !important;
+      background: transparent !important; color: #F2B8BB !important; border: 1px solid rgba(229,9,20,0.5) !important;
+      border-radius: 2px; font-family: var(--font-body); font-size: 0.75rem; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer;
+      transition: background 0.3s, color 0.3s;
+    }
+    .favorites-grid .movie-info button:hover { background: var(--red, #E50914) !important; color: #fff !important; }
+</style>
+<link rel="stylesheet" href="assets/css/cineverse-ui.css">
+</head>
+<body>
+
+<!--  BARRA DE NAVEGACION SUPERIOR -->
+<!-- Barra de navegación principal -->
+<nav id="navbar">
+  <a href="index.html" class="nav-logo" aria-label="CineVerse, ir al inicio">
+    <img src="data:image/svg+xml,%3Csvg width='34' height='34' viewBox='0 0 36 36' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='18' cy='18' r='17' stroke='%23C9A84C' stroke-width='1.2'/%3E%3Ccircle cx='18' cy='18' r='11' stroke='%23C9A84C' stroke-width='0.5' opacity='0.2'/%3E%3Ccircle cx='18' cy='2.8' r='1.6' fill='%23C9A84C'/%3E%3Ccircle cx='18' cy='33.2' r='1.6' fill='%23C9A84C'/%3E%3Ccircle cx='2.8' cy='18' r='1.6' fill='%23C9A84C'/%3E%3Ccircle cx='33.2' cy='18' r='1.6' fill='%23C9A84C'/%3E%3Cpolygon points='14,11.5 14,24.5 25,18' fill='%23E50914'/%3E%3Cpath d='M31.5,5 L32,6.5 L33.5,7 L32,7.5 L31.5,9 L31,7.5 L29.5,7 L31,6.5 Z' fill='%23C9A84C' opacity='0.6'/%3E%3C/svg%3E" alt="" width="34" height="34">
+    <b class="logo-word">Cine<span>Verse</span></b>
+  </a>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="index.html">Inicio</a></li>
+    <li><a href="catalogo.html">Catálogo</a></li>
+    <li><a href="SobreNosotros.html">Sobre nosotros</a></li>
+  </ul>
+  <div class="nav-actions">
+    <a href="catalogo.html?buscar=1" class="nav-search" aria-label="Buscar películas" title="Buscar películas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></a>
+    
+    <button type="button" class="nav-toggle" aria-label="Abrir menú" aria-expanded="false" aria-controls="navLinks"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+
+<!-- PORTADA PRINCIPAL -->
+<main>
+  <div class="profile-header">
+    <div class="profile-avatar">👤</div>
+    <div class="profile-info">
+      <h1>Hola, <em id="userName">Usuario</em></h1>
+      <p class="profile-email" id="userEmail">usuario@email.com</p>
+
+      <div class="profile-stats">
+        <div class="stat">
+          <div class="stat-number" id="favCount">0</div>
+          <div class="stat-label">Películas en Favoritos</div>
+        </div>
+      </div>
+
+      <div class="profile-actions">
+        <button class="btn-primary" onclick="document.querySelector('[data-tab=favoritos]').click()">Ver Favoritos</button>
+        <button class="btn-secondary" onclick="document.querySelector('[data-tab=configuracion]').click()">Configuración</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Botones para alternar entre "Mis Favoritos" y "Configuración" -->
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="favoritos">Mis Favoritos</button>
+    <button class="tab-btn" data-tab="configuracion">Configuración</button>
+  </div>
+
+  <!-- Pestaña Favoritos: el JS llena este cuadrilla con las películas del usuario -->
+  <div class="tab-content active" data-content="favoritos">
+    <div id="favoritesContainer" class="favorites-grid">
+      <!-- Mensaje que se muestra cuando el usuario no tiene películas en favoritos -->
+      <div class="empty-state">
+        <h3>Aún no hay favoritos</h3>
+        <p>Explora nuestro catálogo y añade películas a tus favoritos</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pestaña Configuración: zona de "Peligro" para eliminar la cuenta -->
+  <div class="tab-content" data-content="configuracion">
+    <div class="settings-form">
+      <div class="setting-group">
+        <h3>Peligro</h3>
+        <div class="setting-item">
+          <div class="setting-label">
+            <strong>Eliminar Cuenta</strong>
+            <small>Esta acción no se puede deshacer</small>
+          </div>
+          <button class="btn-secondary" onclick="openDeleteModal()">Eliminar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<!-- FOOTER INFERIOR Menú secundario de navegación, copyright y botón de cerrar sesión que redirige al loggin -->
+</main>
+
+<footer class="cv-footer">
+  <div class="cv-footer-grid">
+    <div>
+      <a href="index.html" class="cv-footer-logo">Cine<span>Verse</span></a>
+      <p>Tu universo de películas. Proyecto final de Programación de Software II, Universidad Tecnológica de Panamá, 2026.</p>
+    </div>
+    <div>
+      <h4>Navegación</h4>
+      <ul>
+        <li><a href="index.html">Inicio</a></li>
+        <li><a href="catalogo.html">Catálogo</a></li>
+        <li><a href="SobreNosotros.html">Sobre nosotros</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Mi cuenta</h4>
+      <ul>
+        <li class="cv-guest-only"><a href="registro.html">Regístrate</a></li>
+        <li class="cv-guest-only"><a href="login.html">Inicia sesión</a></li>
+        <li class="cv-user-only"><a href="perfil.html">Mi perfil</a></li>
+        <li class="cv-user-only"><a href="perfil.html">Mis favoritos</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="cv-footer-bottom">
+    <p>© 2026 <span>CineVerse</span> · Proyecto académico · Datos de películas proporcionados por TMDB, sin respaldo ni certificación de TMDB.</p>
+    <a href="login.html" id="logoutBtnFooter" class="logout-btn cv-user-only">Cerrar sesión</a>
+  </div>
+</footer>
+<script src="assets/js/cineverse-ui.js"></script>
+
+<!-- Modal: Eliminar Cuenta -->
+<div class="delete-modal-overlay" id="deleteModal">
+  <div class="delete-modal-box">
+    <h2>Eliminar Cuenta</h2>
+    <p>
+      Esta acción es <strong>permanente e irreversible</strong>.<br>
+      Para confirmar, escribe exactamente:
+      <span class="keyword">elimino mi cuenta</span>
+    </p>
+    <input
+      type="text"
+      id="deleteConfirmInput"
+      class="delete-modal-input"
+      placeholder="Escribe: elimino mi cuenta"
+      oninput="checkDeleteInput()"
+      autocomplete="off"
+    />
+    <div class="delete-modal-actions">
+      <button class="btn-confirm-delete" id="confirmDeleteBtn" onclick="confirmDeleteAccount()" disabled>
+        Eliminar mi cuenta
+      </button>
+      <button class="btn-cancel-delete" onclick="closeDeleteModal()">
+        Cancelar
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+// Esta página requiere sesión activa: si no hay token guardado, manda directo al login
+const token = localStorage.getItem('token');
+const user  = JSON.parse(localStorage.getItem('user') || 'null');
+
+if (!token || !user) {
+  window.location.href = 'login.html';
+}
+
+// Muestra el nombre y correo del usuario en la cabecera del perfil
+document.getElementById('userName').textContent  = user.nombre || 'Usuario';
+document.getElementById('userEmail').textContent = user.email  || '';
+
+// Pide confirmación antes de cerrar sesión y borra los datos guardados en localStorage
+document.getElementById('logoutBtnFooter').addEventListener('click', function(e) {
+  e.preventDefault();
+  if (confirm('¿Estás seguro de que deseas cerrar sesión?')) {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    window.location.href = 'login.html';
+  }
+});
+
+// Alterna entre las pestañas "Mis Favoritos" y "Configuración"
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelector(`[data-content="${btn.dataset.tab}"]`).classList.add('active');
+  });
+});
+
+// Pide al servlet la lista de favoritos del usuario y dibuja las tarjetas
+async function loadFavorites() {
+  try {
+    if (!user) { window.location.href = 'login.html'; return; }
+
+    // Pide al servlet favoritos.jsp la lista de películas guardadas por el usuario
+    const response  = await fetch('api/favoritos.jsp?usuarioId=' + user.id);
+    const favorites = await response.json();
+
+    if (!Array.isArray(favorites) || favorites.length === 0) {
+      document.getElementById('favCount').textContent = 0;
+      // Sin favoritos: muestra el mensaje de "No hay películas favoritas"
+      document.getElementById('favoritesContainer').innerHTML = `
+        <div class="empty-state" style="grid-column:1/-1">
+          <h3>Aún no tienes películas favoritas</h3>
+          <p>Explora el catálogo y toca el corazón de las que quieras guardar.</p>
+          <a href="catalogo.html" class="btn-primary" style="display:inline-block;margin-top:1.4rem;text-decoration:none;">Ir al catálogo</a>
+        </div>
+      `;
+      return;
+    }
+
+    document.getElementById('favoritesContainer').innerHTML = '';
+    document.getElementById('favCount').textContent = favorites.length;
+
+    // Tarjetas con el estilo compartido; el corazón lleno quita la película de favoritos
+    const grid = document.getElementById('favoritesContainer');
+    grid.innerHTML = favorites.map(f => CV.cardHTML(f, { fav: true })).join('');
+    CV.bindCards(grid, { onRemoved: () => loadFavorites() });
+
+  } catch (error) {
+    console.error('Error loading favorites:', error);
+  }
+}
+
+// Envía POST con action 'remove' a favoritos.jsp: elimina el favorito al que se le presione el boton de eliminar.
+async function removeFavorite(movieId, movieTitle) {
+  try {
+    const response = await fetch('api/favoritos.jsp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ usuarioId: user.id, movieId: movieId, action: 'remove' })
+    });
+    const data = await response.json().catch(() => ({}));
+    if (response.ok) {
+      alert(`"${movieTitle}" ELIMINADA CORRECTAMENTE`);
+      loadFavorites();
+    } else {
+      console.error('[removeFavorite] status:', response.status, data);
+      alert('No se pudo eliminar: ' + (data.message || response.status));
+    }
+  } catch (error) {
+    console.error('[removeFavorite] Error:', error);
+    alert('Error al conectar con el servidor');
+  }
+}
+
+// Controla el modal de eliminar cuenta: solo se habilita el botón si el usuario
+// escribe exactamente la frase de confirmación
+// Abre el modal y reinicia el campo de confirmación
+function openDeleteModal() {
+  const modal = document.getElementById('deleteModal');
+  const input = document.getElementById('deleteConfirmInput');
+  const btn   = document.getElementById('confirmDeleteBtn');
+
+  input.value = '';
+  input.classList.remove('valid');
+  btn.disabled = true;
+  btn.classList.remove('enabled');
+
+  modal.classList.add('open');
+  setTimeout(() => input.focus(), 150);
+}
+
+// Cierra el modal sin eliminar nada
+function closeDeleteModal() {
+  document.getElementById('deleteModal').classList.remove('open');
+  document.getElementById('deleteConfirmInput').value = '';
+}
+
+// Habilita el botón de eliminar solo si el texto escrito coincide exactamente
+function checkDeleteInput() {
+  const val   = document.getElementById('deleteConfirmInput').value.trim().toLowerCase();
+  const btn   = document.getElementById('confirmDeleteBtn');
+  const input = document.getElementById('deleteConfirmInput');
+
+  if (val === 'elimino mi cuenta') { // Texto que se debe escribir exactamente para eliminar cuenta.
+    btn.disabled = false;
+    btn.classList.add('enabled');
+    input.classList.add('valid');
+  } else {
+    btn.disabled = true;
+    btn.classList.remove('enabled');
+    input.classList.remove('valid');
+  }
+}
+
+// Envía la solicitud al servlet cuenta.jsp para borrar la cuenta del usuario
+async function confirmDeleteAccount() {
+  try {
+    console.log('[DELETE] usuarioId:', user.id);
+    console.log('[DELETE] URL:', `api/cuenta.jsp?usuarioId=${user.id}`);
+
+    // Se usa POST porque Tomcat no deja que un JSP reciba el método DELETE (daba error 405)
+    const response = await fetch(`api/cuenta.jsp?usuarioId=${user.id}`, {
+      method: 'POST'
+    });
+
+    console.log('[DELETE] status:', response.status);
+    const texto = await response.text();
+    console.log('[DELETE] respuesta:', texto);
+
+    if (response.ok) {
+      // Cuenta eliminada: limpia la sesión y redirige al inicio
+      closeDeleteModal();
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = 'index.html';
+    } else {
+      alert('Error ' + response.status + ': ' + texto);
+    }
+  } catch (error) {
+    console.error('[DELETE] Error:', error);
+    alert('Error de conexión: ' + error.message);
+  }
+}
+
+// Si el clic fue en el fondo oscuro y no en la caja del modal, se cierra la ventana del modal.
+document.getElementById('deleteModal').addEventListener('click', function(e) {
+  if (e.target === this) closeDeleteModal();
+});
+
+// Carga los favoritos al abrir la página.
+loadFavorites();
+</script>
+
+</body>
+</html>

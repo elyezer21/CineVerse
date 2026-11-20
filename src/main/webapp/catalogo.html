@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Catálogo — CineVerse</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    /* Quita márgenes y paddings por defecto y unifica el modelo de caja */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    /* Variables de toda la web: paleta de colores y tipografías */
+    :root {
+      --red:      #E50914; /* Rojo principal de acento (botones, alertas, marca) */
+      --red-dim:  #8B0000; /* Rojo oscuro/apagado para variantes hover o sombreado */
+      --gold:     #C9A84C; /* Dorado principal (bordes, detalles premium) */
+      --gold-lt:  #F0D080; /* Dorado claro (hover, brillos) */
+      --bg:       #060810; /* Fondo principal, casi negro */
+      --bg2:      #0D0F1A; /* Fondo secundario, un poco más claro */
+      --bg3:      #12142200; /* Fondo terciario, con canal alpha en 00 (transparente) */
+      --surface:  #161828; /* Color de superficie para tarjetas/paneles */
+      --surface2: #1E2038; /* Superficie secundaria, un tono más claro */
+      --white:    #F4F4F0; /* Blanco cálido para texto principal */
+      --gray:     #8888AA; /* Gris para texto secundario */
+      --gray-lt:  #BBBBCC; /* Gris claro para texto terciario o placeholders */
+      --font-display: 'Cormorant Garamond', serif; /* Tipografía para títulos (serif elegante) */
+      --font-body:    'Outfit', sans-serif; /* Tipografía para cuerpo de texto (sans-serif) */
+    }
+
+    /* Hace un desplazamiento suave al hacer clic a una seccion de la misma página */
+    html { scroll-behavior: smooth; }
+
+    /* Estilos base del body de la página */
+    body {
+      background: var(--bg);
+      color: var(--white);
+      font-family: var(--font-body);
+      font-weight: 300;
+      overflow-x: hidden;
+    }
+
+    /* ESTILO DEL FONDO DE LA PAGINA */
+    /* Capa de textura (SVG con filtro de ruido) sobre todo el fondo */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      opacity: 0.035; /* Tono muy sutil */
+      pointer-events: none; /* No interfiere con clics del usuario */
+      z-index: 0;
+    }
+
+    /* BARRA DE NAVEGACION */
+    /* Barra de navegación fija en la parte superior con fondo casi transparente */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0;
+      z-index: 1000;
+      padding: 0 5%;
+      height: 72px;
+      display: flex; align-items: center; justify-content: space-between;
+      transition: background 0.5s, backdrop-filter 0.5s, border-color 0.5s;
+      border-bottom: 1px solid transparent;
+      background: rgba(6,8,16,0.85);
+      backdrop-filter: blur(20px); /* Efecto vidrio esmerilado sobre el contenido detrás y efecto blur */
+      border-color: rgba(201,168,76,0.12);
+    }
+
+    /* Titulo "CineVerse" en la esquina izquierda de la barra de navegacion */
+    .nav-logo {
+      font-family: var(--font-display);
+      font-size: 1.9rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      color: var(--white);
+      text-decoration: none;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .nav-logo span { color: var(--red); } /* La palabra "Verse" se resalta en rojo */
+
+    /* Lista de enlaces de navegación (Home y Sobre Nosotros) */
+    .nav-links {
+      display: flex; align-items: center; gap: 2.5rem;
+      list-style: none;
+    }
+    /* Estilos de las listas de enlaces de navegación (Home y Sobre Nosotros) */
+    .nav-links a {
+      color: var(--gray-lt);
+      text-decoration: none;
+      font-size: 0.82rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      position: relative;
+      transition: color 0.3s;
+    }
+    /* Línea dorada que aparece debajo del enlace al pasar el mouse */
+    .nav-links a::after {
+      content: '';
+      position: absolute; bottom: -4px; left: 0;
+      width: 0; height: 1px;
+      background: var(--gold);
+      transition: width 0.35s ease;
+    }
+    .nav-links a:hover { color: var(--white); }
+    .nav-links a:hover::after { width: 100%; }
+
+    /* Botón rojo de "Inicia Sesión", "Regístrate" y "Mi Perfil" */
+    .nav-cta {
+      background: var(--red);
+      color: var(--white) !important;
+      padding: 0.5rem 1.4rem;
+      border-radius: 2px;
+      letter-spacing: 0.12em;
+      transition: background 0.3s, transform 0.2s !important;
+      cursor: pointer;
+    }
+    .nav-cta::after { display: none !important; } /* Sin línea inferior, a diferencia de los otros enlaces */
+    .nav-cta:hover { background: #ff1a26 !important; transform: translateY(-1px); } /* Al pasar el mouse por el boton se hace color "rojo blancuzco" */
+
+    /* CONTENIDO DEL MAIN */
+    /* Contenedor principal de la página, se localiza arriba del footer */
+    main {
+      padding: 100px 5% 50px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Encabezado de la página de catálogo (título y subtítulo) */
+    .catalogo-header {
+      margin-bottom: 3rem;
+      animation: fadeIn 0.8s ease;
+    }
+    /* Animacion de aparicion en el titulo de la pagina catalogo */
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+    /* Titulo de la pagina catalogo */
+    .catalogo-title {
+      font-family: var(--font-display);
+      font-size: clamp(2.5rem, 6vw, 4rem);
+      font-weight: 700;
+      margin-bottom: 1rem;
+      letter-spacing: 0.05em;
+    }
+    /* Resalta la palabra "Catálogo" en dorado y en fuente itálica */
+    .catalogo-title em {
+      color: var(--gold);
+      font-style: italic;
+    }
+    /* Subtitulo de la pagina catalogo */
+    .catalogo-subtitle {
+      color: var(--gray);
+      font-size: 1rem;
+      letter-spacing: 0.1em;
+    }
+
+    /* BARRA DE BUSQUEDA Y FILTROS DE GENEROS DE PELICULAS */
+    /* Contenedor de la barra de búsqueda más botones de filtro por género */
+    .search-container {
+      margin-bottom: 3rem;
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      align-items: center;
+      animation: slideUp 0.6s ease 0.2s forwards;
+      opacity: 0;
+    }
+    /* Animacion sobre las peliculas al buscarla (se desplaza hacia abajo) */
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Caja que envuelve el input de búsqueda */
+    .search-box {
+      position: relative;
+      flex: 1;
+      min-width: 250px;
+      max-width: 500px;
+    }
+
+    /* Campo de texto donde el usuario escribe la búsqueda */
+    #searchInput {
+      width: 100%;
+      padding: 0.9rem 1rem 0.9rem 2.8rem;
+      background: rgba(22, 24, 40, 0.6);
+      border: 1px solid rgba(201, 168, 76, 0.2);
+      border-radius: 2px;
+      color: var(--white);
+      font-family: var(--font-body);
+      font-size: 0.95rem;
+      transition: all 0.3s ease;
+      outline: none;
+    }
+    /* Color del texto que sale dentro de la caja de busqueda */
+    #searchInput::placeholder {
+      color: rgba(136, 136, 170, 0.5);
+    }
+
+    /* Efecto de la barra de busqueda: borde dorado y leve resplandor rojo */
+    #searchInput:focus {
+      background: rgba(22, 24, 40, 0.8);
+      border-color: rgba(201, 168, 76, 0.5);
+      box-shadow: 0 0 25px rgba(229, 9, 20, 0.2);
+    }
+
+    /* Contenedor de los botones de filtro por género */
+    .filters {
+      display: flex;
+      gap: 0.8rem;
+      flex-wrap: wrap;
+    }
+
+    /* Botón individual de filtro (Todas, Acción, Comedia, etc.) */
+    .filter-btn {
+      padding: 0.8rem 1.2rem;
+      background: rgba(22, 24, 40, 0.6);
+      border: 1px solid rgba(201, 168, 76, 0.2);
+      border-radius: 2px;
+      color: var(--gray-lt);
+      font-family: var(--font-body);
+      font-size: 0.85rem;
+      letter-spacing: 0.12em;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    /* Estado resaltado: al pasar el mouse o cuando el filtro está seleccionado */
+    .filter-btn:hover,
+    .filter-btn.active {
+      background: rgba(201, 168, 76, 0.1);
+      border-color: var(--gold);
+      color: var(--white);
+    }
+
+    /* FORMA CUADRADA DE LAS PELICULAS */
+    /* Organiza los posters de las peliculas de forma cuadrado */
+    .movies-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 2rem;
+      margin-bottom: 4rem;
+    }
+
+    /* Tarjeta individual de película con animación de deslizamiento hacia arriba */
+    .movie-card {
+      position: relative;
+      cursor: pointer;
+      animation: cardReveal 0.6s ease forwards;
+      opacity: 0;
+    }
+
+    /* Animacion de las tarjetas de peliculas deslizandose hacia arriba */
+    @keyframes cardReveal {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Retraso escalonado para que las primeras 6 tarjetas no aparezcan todas a la vez */
+    .movie-card:nth-child(1) { animation-delay: 0.1s; }
+    .movie-card:nth-child(2) { animation-delay: 0.15s; }
+    .movie-card:nth-child(3) { animation-delay: 0.2s; }
+    .movie-card:nth-child(4) { animation-delay: 0.25s; }
+    .movie-card:nth-child(5) { animation-delay: 0.3s; }
+    .movie-card:nth-child(6) { animation-delay: 0.35s; }
+
+    /* Póster de la película dentro de la tarjeta */
+    .movie-card img {
+      width: 100%;
+      height: 320px;
+      object-fit: cover;
+      border-radius: 2px;
+      transition: all 0.3s ease;
+      display: block;
+    }
+
+    /* Efecto al pasar el mouse: pequeño ZOOM y oscurecimiento del póster */
+    .movie-card:hover img {
+      transform: scale(1.05);
+      filter: brightness(0.7);
+    }
+
+    /* Cuadrito rojo con la calificación de la película */
+    .rating-badge {
+      position: absolute;
+      top: 10px; right: 10px;
+      background: rgba(229, 9, 20, 0.9);
+      padding: 0.4rem 0.8rem;
+      border-radius: 2px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      backdrop-filter: blur(10px);
+    }
+
+    /* Bloque de información debajo del póster (título, año, metadato, etc) */
+    .movie-info {
+      padding: 1rem 0;
+    }
+
+    /* Título de la película, limitado a 2 líneas */
+    .movie-title {
+      font-family: var(--font-display);
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 0.4rem;
+      line-height: 1.3;
+      display: -webkit-box;
+      line-clamp: 2;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    /* Fila con año de lanzamiento y porcentaje de popularidad */
+    .movie-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.8rem;
+      color: var(--gray);
+    }
+
+    /* Capa oscura que cubre la tarjeta al pasar el mouse */
+    .movie-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(6, 8, 16, 0.85);
+      backdrop-filter: blur(10px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      border-radius: 2px;
+      transition: opacity 0.3s ease;
+      gap: 1rem;
+    }
+
+    .movie-card:hover .movie-overlay {
+      opacity: 1;
+    }
+
+    /* Botón "Ver Ahora" dentro del overlay de la tarjeta */
+    .movie-play-btn {
+      padding: 0.8rem 2rem;
+      background: var(--red);
+      color: var(--white);
+      text-decoration: none;
+      border-radius: 2px;
+      font-size: 0.9rem;
+      letter-spacing: 0.1em;
+      transition: all 0.3s ease;
+      font-weight: 500;
+    }
+    /* Botón rojo "Ver Ahora" dentro del overlay de la tarjeta */
+    .movie-play-btn:hover {
+      background: #ff1a26;
+      transform: translateY(-2px);
+    }
+
+    /* Botón "Favorito" dentro del overlay de la tarjeta */
+    .add-fav-btn {
+      padding: 0.6rem 1.2rem;
+      background: transparent;
+      color: var(--gold);
+      border: 1px solid var(--gold);
+      border-radius: 2px;
+      font-size: 0.85rem;
+      letter-spacing: 0.1em;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-weight: 500;
+    }
+    /* Botón con borde amarillo de "Favorito" dentro del overlay de la tarjeta */
+    .add-fav-btn:hover {
+      background: rgba(201, 168, 76, 0.1);
+    }
+
+    /* CARGA DE REPRODUCCION DE PELICULAS Y ESTADO DE INICIO */
+    /* Mensaje que se muestra mientras se cargan las películas desde la API */
+    .loading {
+      text-align: center;
+      padding: 3rem;
+      color: var(--gray);
+      font-size: 1.1rem;
+    }
+
+    /* Mensaje que se muestra cuando la búsqueda no arroja resultados */
+    .no-results {
+      text-align: center;
+      padding: 3rem;
+      color: var(--gray);
+    }
+    /* Mensaje mas pequeño que se muestra cuando la búsqueda no arroja resultados */
+    .no-results h3 {
+      font-family: var(--font-display);
+      font-size: 2rem;
+      color: var(--gold);
+      margin-bottom: 1rem;
+    }
+
+    /* PIE DE PAGINA */
+    /* Fondo negro con bordes superiores amarillos */
+    footer {
+      background: rgba(6, 8, 16, 0.5);
+      border-top: 1px solid rgba(201, 168, 76, 0.1);
+      padding: 2rem;
+      text-align: center;
+      color: var(--gray);
+      font-size: 0.85rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    footer a {
+      color: var(--grey);
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+
+    footer a:hover {
+      color: var(--white);
+    }
+
+/* Botón de cerrar sesión - redirige al loggin */
+.logout-btn:hover { color: var(--red) !important; border-color: var(--red) !important; }
+
+/* Ícono de búsqueda que enlaza a Google.com */
+.nav-search {
+  color: var(--gray-lt);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  transition: color 0.3s;
+}
+.nav-search:hover { color: var(--gold); }
+.nav-search svg { width: 20px; height: 20px; }
+
+/* Navegacion de los iconos de las redes sociales */
+.nav-social { display: flex; align-items: center; gap: 0.9rem; margin-left: 1.5rem; margin-right: 0.6rem; }
+.nav-social a { color: #BBBBCC; display: flex; transition: color 0.3s; }
+.nav-social a:hover { color: var(--gold); }
+.nav-social svg { width: 18px; height: 18px; }
+  
+    /* ---- Responsivo del catálogo: 2 columnas en celular ---- */
+    @media (max-width: 600px) {
+      .movies-grid { grid-template-columns: repeat(2, 1fr); gap: 1.1rem; }
+      .movie-title { font-size: 0.95rem; }
+    }
+
+</style>
+<link rel="stylesheet" href="assets/css/cineverse-ui.css">
+</head>
+<body>
+
+<!-- Barra de navegacion: Titulo de pagina, logo, enlaces, botón de sesión/registro/perfil, redes sociales, etc -->
+<nav id="navbar">
+  <a href="index.html" class="nav-logo" aria-label="CineVerse, ir al inicio">
+    <img src="data:image/svg+xml,%3Csvg width='34' height='34' viewBox='0 0 36 36' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='18' cy='18' r='17' stroke='%23C9A84C' stroke-width='1.2'/%3E%3Ccircle cx='18' cy='18' r='11' stroke='%23C9A84C' stroke-width='0.5' opacity='0.2'/%3E%3Ccircle cx='18' cy='2.8' r='1.6' fill='%23C9A84C'/%3E%3Ccircle cx='18' cy='33.2' r='1.6' fill='%23C9A84C'/%3E%3Ccircle cx='2.8' cy='18' r='1.6' fill='%23C9A84C'/%3E%3Ccircle cx='33.2' cy='18' r='1.6' fill='%23C9A84C'/%3E%3Cpolygon points='14,11.5 14,24.5 25,18' fill='%23E50914'/%3E%3Cpath d='M31.5,5 L32,6.5 L33.5,7 L32,7.5 L31.5,9 L31,7.5 L29.5,7 L31,6.5 Z' fill='%23C9A84C' opacity='0.6'/%3E%3C/svg%3E" alt="" width="34" height="34">
+    <b class="logo-word">Cine<span>Verse</span></b>
+  </a>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="index.html">Inicio</a></li>
+    <li><a href="catalogo.html" class="active" aria-current="page">Catálogo</a></li>
+    <li><a href="SobreNosotros.html">Sobre nosotros</a></li>
+  </ul>
+  <div class="nav-actions">
+    <a href="catalogo.html?buscar=1" class="nav-search" aria-label="Buscar películas" title="Buscar películas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></a>
+    <a href="perfil.html" class="nav-cta" id="navProfile" style="display:none;">Mi perfil</a>
+    <a href="login.html" class="nav-cta" id="navLogin">Inicia sesión</a>
+    <button type="button" class="nav-toggle" aria-label="Abrir menú" aria-expanded="false" aria-controls="navLinks"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+
+<!-- Contenido del main: encabezado, buscador/filtros y forma cuadrada de películas -->
+<main>
+  <!-- Título y subtítulo de la página -->
+  <div class="catalogo-header">
+    <h1 class="catalogo-title">Explora Nuestro <em>Catálogo</em></h1>
+    <p class="catalogo-subtitle">Descubre películas de todos los géneros</p>
+  </div>
+
+  <!-- Barra de búsqueda y botones de filtro por género -->
+  <div class="search-container">
+    <div class="search-box">
+      <input 
+        type="text" 
+        id="searchInput" 
+        placeholder="Busca una película por título..."
+      >
+    </div>
+    <!-- Cada botón tiene un data generada con el ID de género usado por la API de TMDB -->
+    <div class="filters">
+      <button class="filter-btn active" data-genre="">Todas</button>
+      <button class="filter-btn" data-genre="28">Acción</button>
+      <button class="filter-btn" data-genre="35">Comedia</button>
+      <button class="filter-btn" data-genre="18">Drama</button>
+      <button class="filter-btn" data-genre="27">Terror</button>
+      <button class="filter-btn" data-genre="10749">Romance</button>
+    </div>
+  </div>
+
+  <!-- Contenedor donde el JS inserta dinámicamente las tarjetas de película -->
+  <div id="moviesContainer" class="movies-grid cv-grid">
+    <div class="loading">Cargando películas...</div>
+  </div>
+</main>
+
+<!-- FOOTER INFERIOR -->
+<!-- Menú secundario de navegación, copyright y botón de cerrar sesión que redirige al loggin -->
+<footer class="cv-footer">
+  <div class="cv-footer-grid">
+    <div>
+      <a href="index.html" class="cv-footer-logo">Cine<span>Verse</span></a>
+      <p>Tu universo de películas. Proyecto final de Programación de Software II, Universidad Tecnológica de Panamá, 2026.</p>
+    </div>
+    <div>
+      <h4>Navegación</h4>
+      <ul>
+        <li><a href="index.html">Inicio</a></li>
+        <li><a href="catalogo.html">Catálogo</a></li>
+        <li><a href="SobreNosotros.html">Sobre nosotros</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Mi cuenta</h4>
+      <ul>
+        <li class="cv-guest-only"><a href="registro.html">Regístrate</a></li>
+        <li class="cv-guest-only"><a href="login.html">Inicia sesión</a></li>
+        <li class="cv-user-only"><a href="perfil.html">Mi perfil</a></li>
+        <li class="cv-user-only"><a href="perfil.html">Mis favoritos</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="cv-footer-bottom">
+    <p>© 2026 <span>CineVerse</span> · Proyecto académico · Datos de películas proporcionados por TMDB, sin respaldo ni certificación de TMDB.</p>
+    <a href="login.html" id="logoutBtn" class="logout-btn cv-user-only">Cerrar sesión</a>
+  </div>
+</footer>
+<script src="assets/js/cineverse-ui.js"></script>
+
+<script>
+
+// 1. AUTENTICACION DEL USUARIO
+// Lee el token y los datos del usuario guardados al iniciar sesión.
+const token = localStorage.getItem('token');
+const user  = JSON.parse(localStorage.getItem('user') || 'null');
+
+// Si hay sesión activa, oculta "Inicia Sesión" y muestra "Mi Perfil".
+if (token && user) {
+  document.getElementById('navLogin').style.display  = 'none';
+  document.getElementById('navProfile').style.display = 'block';
+  document.getElementById('navProfile').textContent  = user.nombre; // Mostrar nombre del usuario.
+}
+
+// 2. CONFIGURACIÓN DE LA API
+const API_KEY = '3eaf8160770351b60f1da8b97fddc6af';  // Clave de acceso a TMDB.
+const BASE_URL = 'https://api.themoviedb.org/3';     // URL base de la API de TMDB.
+
+let allMovies    = []; // Última lista de películas recibida desde la API.
+let currentGenre = ''; // ID del género actualmente seleccionado (vacío = todas).
+
+// 3. CARGAR LAS PELÍCULAS
+// Solicita películas a la API según texto de búsqueda, Nombre, Género, etc.
+async function loadMovies(query = '', genre = '') {
+  const container = document.getElementById('moviesContainer');
+  container.innerHTML = CV.skeleton(12); // Esqueletos mientras llegan los datos
+
+  try {
+    let url;
+
+    if (query) {
+      // Búsqueda por título usando el endpoint de búsqueda textual.
+      url = `${BASE_URL}/search/movie?api_key=${API_KEY}&language=es&query=${encodeURIComponent(query)}&page=1`;
+    } else if (genre) {
+      // Filtro por género usando el endpoint de descubrimiento.
+      url = `${BASE_URL}/discover/movie?api_key=${API_KEY}&language=es&with_genres=${genre}&sort_by=popularity.desc&page=1`;
+    } else {
+      // Sin filtros: muestra las películas más populares del momento.
+      url = `${BASE_URL}/movie/popular?api_key=${API_KEY}&language=es&page=1`;
+    }
+
+    const response = await fetch(url);
+    if (!response.ok) throw new Error('API Error');
+
+    const data = await response.json();
+    allMovies = data.results || [];
+
+    if (allMovies.length === 0) {
+      // La búsqueda devolvió cero resultados.
+      container.innerHTML = `
+        <div class="no-results">
+          <p>No encontramos películas que coincidan con tu búsqueda.</p>
+          <p style="margin-top:1rem;font-size:0.9rem;">Intenta con otros términos o géneros.</p>
+        </div>
+      `;
+      return;
+    }
+
+    renderMovies(allMovies); // Dibuja las tarjetas con los resultados.
+
+  } catch (error) {
+    // Error de red o respuesta inesperada de la API.
+    console.error('Error loading movies:', error);
+    container.innerHTML = `
+      <div class="no-results">
+        <p>Error al cargar las películas. Intenta de nuevo más tarde.</p>
+      </div>
+    `;
+  }
+}
+
+// 4. RENDERIZAR TARJETAS
+// Construye y muestra las tarjetas de película en el contenedor.
+function renderMovies(movies) {
+  const container = document.getElementById('moviesContainer');
+  // Tarjetas con el estilo compartido (assets/js/cineverse-ui.js)
+  container.innerHTML = movies.map(m => CV.cardHTML(m)).join('');
+  CV.bindCards(container);
+}
+
+
+// 5. BÚSQUEDA CON RETRAZO
+// Espera 500 ms sin actividad antes de lanzar la búsqueda,
+// evitando llamadas a la API en cada tecla presionada
+let searchTimeout;
+document.getElementById('searchInput').addEventListener('input', (e) => {
+  clearTimeout(searchTimeout);
+  const query = e.target.value.trim();
+
+  searchTimeout = setTimeout(() => {
+    if (query.length > 0) {
+      loadMovies(query, '');       // Búsqueda por texto ignora el filtro de género
+    } else {
+      loadMovies('', currentGenre); // Al borrar, vuelve al filtro de género activo
+    }
+  }, 500);
+});
+
+// 6. BOTONES DE FILTRO POR GÉNERO
+// Marca el botón pulsado como activo y recarga películas del género elegido
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    currentGenre = btn.dataset.genre; // ID del género (definido en data-genre del botón)
+    const searchQuery = document.getElementById('searchInput').value.trim();
+
+    if (searchQuery) {
+      loadMovies(searchQuery, '');   // Si hay texto activo, prioriza la búsqueda textual
+    } else {
+      loadMovies('', currentGenre);  // Si no, filtra por el género seleccionado
+    }
+  });
+});
+
+// 7. AÑADIR A FAVORITOS
+// Envía la película al servlet "favortios.jsp" para guardarla en la BD
+async function addToFavorites(movieId, movieTitle, posterPath) {
+  if (!user) {
+    // Sin sesión activa, redirige al login.
+    alert('Debes iniciar sesión para añadir a favoritos');
+    window.location.href = 'login.html';
+    return;
+  }
+  // Envía la película al servlet favoritos.jsp con los datos del usuario y la película.
+  try {
+    const response = await fetch('api/favoritos.jsp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        movieId:    movieId,// ID de la pelicula
+        movieTitle: movieTitle, // Titulo de la pelicula
+        posterPath: posterPath, // Poster de la pelicula
+        usuarioId:  user.id   // ID del usuario autenticado
+      })
+    });
+   // Convierte la respuesta del servidor de JSON a objeto JS
+    const data = await response.json();
+   // Si la petición fue exitosa, muestra un mensaje distinto según si ya era favorito o se acaba de agregar.
+    if (response.ok) {
+      if (data.action === 'exists') {
+        alert(`"${movieTitle}" YA LA TIENES EN FAVORITOS`);
+      } else {
+        alert(`"${movieTitle}" añadida a favoritos`);
+      }
+    } else { // Sino entonces el servidor responde con error y muestra el mensaje que envió.
+      alert('Error: ' + data.message);
+    }
+ // Toma los errores de red o de conexión con el servidor.
+  } catch (error) { 
+    console.error('Error al guardar favorito:', error);
+    alert('Error al conectarse al servidor');
+  }
+}
+
+// 8. CARGA INICIAL
+// Al abrir la página se muestran las películas más populares por defecto.
+CV.loadFavIds().then(() => loadMovies());
+
+// Desde la lupa de la barra superior (catalogo.html?buscar=1) se enfoca el buscador
+if (new URLSearchParams(window.location.search).has('buscar')) {
+  const buscador = document.getElementById('searchInput');
+  buscador.scrollIntoView({ block: 'center' });
+  buscador.focus();
+}
+</script>
+</body>
+</html>

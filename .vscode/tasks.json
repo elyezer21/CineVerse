@@ -1,0 +1,76 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "CineVerse: Ejecutar (Tomcat 9)",
+      "type": "shell",
+      "command": "${workspaceFolder}/mvnw",
+      "windows": {
+        "command": "${workspaceFolder}\\mvnw.cmd"
+      },
+      "args": [
+        "package",
+        "cargo:run"
+      ],
+      "dependsOn": "CineVerse: Detener Tomcat",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "cineverse",
+        "pattern": {
+          "regexp": "^\\[ERROR\\] (.*)$",
+          "message": 1
+        },
+        "background": {
+          "activeBegins": "Scanning for projects",
+          "activeEnds": "Press Ctrl-C to stop the container"
+        }
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
+    },
+    {
+      "label": "CineVerse: Detener Tomcat",
+      "type": "process",
+      "command": "powershell.exe",
+      "args": [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "${workspaceFolder}\\.vscode\\detener-tomcat.ps1"
+      ],
+      "linux": {
+        "command": "true",
+        "args": []
+      },
+      "osx": {
+        "command": "true",
+        "args": []
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "silent"
+      }
+    },
+    {
+      "label": "CineVerse: Generar WAR",
+      "type": "shell",
+      "command": "${workspaceFolder}/mvnw",
+      "windows": {
+        "command": "${workspaceFolder}\\mvnw.cmd"
+      },
+      "args": [
+        "clean",
+        "package"
+      ],
+      "dependsOn": "CineVerse: Detener Tomcat",
+      "problemMatcher": []
+    }
+  ]
+}

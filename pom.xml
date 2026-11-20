@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  CineVerse - Proyecto Final Programación de Software II (UTP)
+  Proyecto Maven para abrir y ejecutar en Visual Studio Code (antes era un Dynamic Web Project de Eclipse).
+
+  Ejecutar:  mvnw.cmd cargo:run      (Windows)   ->  http://localhost:8080/CineVerse/
+             ./mvnw cargo:run        (Linux/Mac)
+  La primera vez Maven descarga Tomcat 9 y las librerías automáticamente.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>pa.utp.cineverse</groupId>
+  <artifactId>CineVerse</artifactId>
+  <version>1.0.0</version>
+  <packaging>war</packaging>
+  <name>CineVerse</name>
+
+  <properties>
+    <!-- Compila para Java 11 o superior: funciona con JDK 11, 17, 21 o más nuevo -->
+    <maven.compiler.release>11</maven.compiler.release>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <tomcat.version>9.0.98</tomcat.version>
+    <!-- Puerto del servidor: cámbialo con  -Dcineverse.port=8081  si el 8080 está ocupado -->
+    <cineverse.port>8080</cineverse.port>
+  </properties>
+
+  <dependencies>
+    <!-- Las provee Tomcat 9 (javax.*), solo se usan para compilar -->
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>javax.servlet-api</artifactId>
+      <version>4.0.1</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>javax.servlet.jsp</groupId>
+      <artifactId>javax.servlet.jsp-api</artifactId>
+      <version>2.3.3</version>
+      <scope>provided</scope>
+    </dependency>
+
+    <!-- Las mismas librerías que estaban en WEB-INF/lib -->
+    <dependency>
+      <groupId>com.mysql</groupId>
+      <artifactId>mysql-connector-j</artifactId>
+      <version>9.1.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.json</groupId>
+      <artifactId>json</artifactId>
+      <version>20240303</version>
+    </dependency>
+    <dependency>
+      <groupId>org.mindrot</groupId>
+      <artifactId>jbcrypt</artifactId>
+      <version>0.4</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <finalName>CineVerse</finalName>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-war-plugin</artifactId>
+        <version>3.4.0</version>
+      </plugin>
+
+      <!-- Cargo: descarga Tomcat 9, despliega la app y la deja corriendo (mvn cargo:run) -->
+      <plugin>
+        <groupId>org.codehaus.cargo</groupId>
+        <artifactId>cargo-maven3-plugin</artifactId>
+        <version>1.10.16</version>
+        <configuration>
+          <container>
+            <containerId>tomcat9x</containerId>
+            <artifactInstaller>
+              <groupId>org.apache.tomcat</groupId>
+              <artifactId>tomcat</artifactId>
+              <version>${tomcat.version}</version>
+              <!-- Tomcat se instala fuera de target/: así "clean" nunca choca con un Tomcat abierto -->
+              <extractDir>${user.home}/.cineverse/tomcat</extractDir>
+            </artifactInstaller>
+          </container>
+          <configuration>
+            <properties>
+              <cargo.servlet.port>${cineverse.port}</cargo.servlet.port>
+              <cargo.servlet.uriencoding>UTF-8</cargo.servlet.uriencoding>
+              <!-- Permite conectar el depurador de VS Code en el puerto 8000 -->
+              <cargo.jvmargs>-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=localhost:8000 -Dfile.encoding=UTF-8</cargo.jvmargs>
+            </properties>
+          </configuration>
+          <deployables>
+            <deployable>
+              <groupId>${project.groupId}</groupId>
+              <artifactId>${project.artifactId}</artifactId>
+              <type>war</type>
+              <properties>
+                <context>/CineVerse</context>
+              </properties>
+            </deployable>
+          </deployables>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>

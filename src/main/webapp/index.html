@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CineVerse — Tu universo de películas</title>
+
+<!-- Fuente que utilizamos: Cormorant Garamond para títulos, Outfit para el cuerpo del texto -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<style>
+/* Variables CSS globales: colores, tipografías y tonos de fondo */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    /* Variables de toda la web: paleta de colores y tipografías */
+    :root {
+      --red:      #E50914; /* Rojo principal de acento (botones, alertas, marca) */
+      --red-dim:  #8B0000; /* Rojo oscuro/apagado para variantes hover o sombreado */
+      --gold:     #C9A84C; /* Dorado principal (bordes, detalles premium) */
+      --gold-lt:  #F0D080; /* Dorado claro (hover, brillos) */
+      --bg:       #060810; /* Fondo principal, casi negro */
+      --bg2:      #0D0F1A; /* Fondo secundario, un poco más claro */
+      --bg3:      #12142200; /* Fondo terciario, con canal alpha en 00 (transparente) */
+      --surface:  #161828; /* Color de superficie para tarjetas/paneles */
+      --surface2: #1E2038; /* Superficie secundaria, un tono más claro */
+      --white:    #F4F4F0; /* Blanco cálido para texto principal */
+      --gray:     #8888AA; /* Gris para texto secundario */
+      --gray-lt:  #BBBBCC; /* Gris claro para texto terciario o placeholders */
+      --font-display: 'Cormorant Garamond', serif; /* Tipografía para títulos (serif elegante) */
+      --font-body:    'Outfit', sans-serif; /* Tipografía para cuerpo de texto (sans-serif) */
+    }
+/* Hace un desplazamiento suave al hacer clic a una seccion de la misma página */
+html { scroll-behavior: smooth; }
+
+/* Estilos base del body de la página */
+body {
+  background: var(--bg);
+  color: var(--white);
+  font-family: var(--font-body);
+  font-weight: 300;
+  overflow-x: hidden;
+}
+
+/* ESTILO DEL FONDO DE LA PAGINA */
+/* Capa de textura (SVG con filtro de ruido) sobre todo el fondo */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  opacity: 0.035; /* Tono muy sutil */
+  pointer-events: none; /* No interfiere con clics del usuario */
+  z-index: 0;
+}
+
+/* BARRA DE NAVEGACION */
+/* Barra de navegación fija en la parte superior */
+nav {
+  position: fixed; top: 0; left: 0; right: 0;
+  z-index: 1000;
+  padding: 0 5%;
+  height: 72px;
+  display: flex; align-items: center; justify-content: space-between;
+  transition: background 0.5s, backdrop-filter 0.5s, border-color 0.5s;
+  border-bottom: 1px solid transparent;
+}
+/* Estilo de la barra de navegacion al hacer scroll: fondo oscuro translúcido con efecto de desenfoque y borde dorado  */
+nav.scrolled {
+  background: rgba(6,8,16,0.85);
+  backdrop-filter: blur(20px);
+  border-color: rgba(201,168,76,0.12);
+}
+
+/* Titulo "CineVerse" en la esquina izquierda de la barra de navegacion */
+.nav-logo {
+  font-family: var(--font-display);
+  font-size: 1.9rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--white);
+  text-decoration: none;
+  display: flex; align-items: center; gap: 10px;
+}
+.nav-logo span { color: var(--red); } /* La palabra "Verse" se resalta en rojo */
+
+/* Lista de enlaces de navegación (Peliculas destacadas, catalogo y Sobre Nosotros) */
+.nav-links {
+  display: flex; align-items: center; gap: 2.5rem;
+  list-style: none;
+}
+/* Estilos de las listas de enlaces de navegación */
+.nav-links a {
+  color: var(--gray-lt);
+  text-decoration: none;
+  font-size: 0.82rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  position: relative;
+  transition: color 0.3s;
+}
+/* Línea dorada que aparece debajo del enlace al pasar el mouse */
+.nav-links a::after {
+  content: '';
+  position: absolute; bottom: -4px; left: 0;
+  width: 0; height: 1px;
+  background: var(--gold);
+  transition: width 0.35s ease;
+}
+.nav-links a:hover { color: var(--white); }
+.nav-links a:hover::after { width: 100%; }
+
+/* Botón rojo de "Inicia Sesión", "Regístrate" o "Mi Perfil" */
+.nav-cta {
+  background: var(--red);
+  color: var(--white) !important;
+  padding: 0.5rem 1.4rem;
+  border-radius: 2px;
+  letter-spacing: 0.12em;
+  transition: background 0.3s, transform 0.2s !important;
+}
+.nav-cta::after { display: none !important; } /* Sin línea inferior, a diferencia de los otros enlaces */
+.nav-cta:hover { background: #ff1a26 !important; transform: translateY(-1px); } /* Al pasar el mouse por el boton se hace color "rojo blancuzco" */
+
+/* SECCIÓN HERO (PÁGINA DE INICIO) */
+/* Contenedor de pantalla completa, centra el contenido verticalmente */
+#hero {
+  position: relative;
+  min-height: max(100vh, 680px); padding: 110px 0 80px; box-sizing: border-box;
+  display: flex; align-items: center;
+  overflow: hidden;
+}
+
+/* Fondo degradado animado cuando no hay video */
+.hero-bg-fallback {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 70% 50%, rgba(229,9,20,0.08) 0%, transparent 70%),
+    radial-gradient(ellipse 60% 80% at 20% 80%, rgba(201,168,76,0.06) 0%, transparent 60%),
+    linear-gradient(135deg, #060810 0%, #0D1020 50%, #060810 100%);
+  z-index: 0;
+}
+
+/* Líneas de escaneo estilo pantalla de cine */
+.scan-lines {
+  position: absolute; inset: 0; z-index: 1;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(255,255,255,0.008) 2px,
+    rgba(255,255,255,0.008) 4px
+  );
+  pointer-events: none;
+}
+
+/* Contenido del Inicio: con animación de entrada desde abajo */
+.hero-content {
+  position: relative; z-index: 10;
+  padding: 0 0 0 8%;
+  max-width: min(56vw, 1000px);
+  opacity: 0;
+  animation: heroReveal 1.2s ease 0.3s forwards;
+}
+/* Animacion de entrada: mientras aparece se desliza hacia arriba */
+@keyframes heroReveal {
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Título principal del inicio en tipografía display */
+.hero-title {
+  font-family: var(--font-display);
+  font-size: clamp(3.4rem, 6vw, 6.6rem);
+  font-weight: 700;
+  line-height: 0.95;
+  letter-spacing: -0.01em;
+  margin-bottom: 1.8rem;
+  opacity: 0; animation: fadeUp 0.9s ease 0.8s forwards;
+}
+/* Estilo del texto dentro del título principal: cursiva en rojo */
+.hero-title em {
+  font-style: italic;
+  color: var(--red);
+  display: block;
+}
+
+/* Descripción debajo del título */
+.hero-sub {
+  font-size: 1.05rem;
+  color: var(--gray-lt);
+  line-height: 1.7;
+  max-width: 480px;
+  margin-bottom: 2.8rem;
+  font-weight: 300;
+  opacity: 0; animation: fadeUp 0.9s ease 1s forwards;
+}
+
+/* Botones del Inicio (debajo del titulo y descripcion) con animación de entrada */
+.hero-actions {
+  display: flex; gap: 1.2rem; align-items: center;
+  opacity: 0; animation: fadeUp 0.9s ease 1.2s forwards;
+  flex-wrap: wrap;
+}
+
+/* Primer boton color rojo con efecto de brillo al pasar por encima */
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 10px;
+  background: var(--red);
+  color: var(--white);
+  padding: 1rem 2.2rem;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-decoration: none;
+  border: none;
+  position: relative; overflow: hidden;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+/* Efecto de brillo que atraviesa el botón primario al pasar el mouse */
+.btn-primary::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: rgba(255,255,255,0.12);
+  transform: translateX(-100%) skewX(-15deg);
+  transition: transform 0.4s ease;
+}
+.btn-primary:hover::before { transform: translateX(120%) skewX(-15deg); }
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(229,9,20,0.4); }
+
+/* Segundo boton transparente con borde blanco */
+.btn-ghost {
+  display: inline-flex; align-items: center; gap: 10px;
+  background: transparent;
+  color: var(--white);
+  padding: 1rem 2rem;
+  font-size: 0.85rem;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-decoration: none;
+  border: 1px solid rgba(244,244,240,0.25);
+  transition: border-color 0.3s, color 0.3s;
+}
+/* Al pasar el mouse por el boton cambia a color dorado */
+.btn-ghost:hover { border-color: var(--gold); color: var(--gold); }
+
+/* Animación de aparición con desplazamiento hacia arriba */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+/* Animación de aparición simple */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Base compartida para todas las secciones */
+section { position: relative; z-index: 2; }
+
+/* Título de sección en tipografía display */
+.section-title {
+  font-family: var(--font-display);
+  font-size: clamp(2.2rem, 5vw, 3.8rem);
+  font-weight: 600;
+  line-height: 1.1;
+  margin-bottom: 1.2rem;
+}
+.section-title em { color: var(--red); font-style: italic; }
+
+/* SECCIÓN DE PELÍCULAS DESTACADAS */
+/* Forma cuadrada de tarjetas que se cargan desde la API de TMDB */
+/* Espaciado amplio con fondo base de la seccion */
+#featured {
+  padding: 8rem 8%;
+  background: var(--bg);
+}
+
+/* Encabezado de la sección: título y elemento extra alineados en extremos opuestos */
+.featured-header {
+  display: flex; justify-content: space-between; align-items: flex-end;
+  margin-bottom: 4rem;
+  flex-wrap: wrap; gap: 1.5rem;
+}
+
+/* Cuadrilla responsivo de posters de películas */
+.movies-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 1.5rem;
+}
+
+/* Tarjeta individual de película */
+.movie-card {
+  position: relative;
+  border-radius: 4px;
+  overflow: hidden;
+  aspect-ratio: 2/3;
+  background: var(--surface);
+  transition: transform 0.4s cubic-bezier(0.25,0.46,0.45,0.94);
+}
+/* Efecto de escala y acercamiento al pasar el mouse sobre la tarjeta de película */
+.movie-card:hover { transform: scale(1.04) translateY(-6px); z-index: 2; }
+
+/* Imagen de la tarjeta ajustada para cubrir todo el espacio */
+.movie-card img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+/* Zoom adicional en la imagen al pasar con el mouse en la tarjeta */
+.movie-card:hover img { transform: scale(1.06); }
+
+/* Overlay (capa) oscura con título, año y botón de reproducción color rojo */
+.movie-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(to top, rgba(6,8,16,0.95) 0%, rgba(6,8,16,0.3) 50%, transparent 100%);
+  opacity: 0; transition: opacity 0.35s;
+  display: flex; flex-direction: column; justify-content: flex-end;
+  padding: 1.2rem;
+}
+/* Muestra la capa overlay al pasar el mouse sobre la tarjeta */
+.movie-card:hover .movie-overlay { opacity: 1; }
+
+/* Título de la película mostrado sobre el overlay (capa) */
+.movie-title-overlay {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.3rem;
+}
+/* Metadatos (año, duración, genero, valoracion) mostrados sobre el overlay (capa) */
+.movie-meta-overlay {
+  font-size: 0.72rem;
+  color: var(--gray-lt);
+  letter-spacing: 0.1em;
+  margin-bottom: 0.8rem;
+}
+/* Botón rojo de "reproducir" dentro del overlay (capa) */
+.movie-play-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--red);
+  color: white;
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  padding: 0.45rem 1rem;
+  text-decoration: none;
+  width: fit-content;
+  transition: background 0.2s;
+}
+/* Cambia el color del boton al pasar el mouse */
+.movie-play-btn:hover { background: #ff1a26; }
+
+/* Cuadrito amarillo con la calificación de la película */
+.rating-badge {
+  position: absolute; top: 0.7rem; right: 0.7rem;
+  background: rgba(6,8,16,0.85);
+  border: 1px solid var(--gold);
+  color: var(--gold);
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.2rem 0.5rem;
+  border-radius: 2px;
+  letter-spacing: 0.05em;
+}
+
+/* Animación de brillo mientras cargan las películas */
+.movie-skeleton {
+  aspect-ratio: 2/3;
+  background: var(--surface);
+  border-radius: 4px;
+  position: relative; overflow: hidden;
+}
+/* Franja de brillo que se desliza sobre la carga de las peliculas */
+.movie-skeleton::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.04), transparent);
+  animation: shimmer 1.8s infinite;
+}
+/* Animación que mueve el brillo de izquierda a derecha */
+@keyframes shimmer {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(100%); }
+}
+
+/* SECCIÓN CTA "call to action" (LLAMADA A LA ACCIÓN) "seccion que te llama a hacer algo" (registrarse o iniciar sesion) */
+#cta {
+  padding: 8rem 8%;
+  text-align: center;
+  background: var(--bg);
+  position: relative; overflow: hidden;
+}
+#cta::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse 60% 50% at 50% 50%, rgba(229,9,20,0.07), transparent 70%);
+}
+/* Título grande y responsivo del CTA */
+.cta-title {
+  font-family: var(--font-display);
+  font-size: clamp(2.5rem, 6vw, 5rem);
+  font-weight: 700;
+  line-height: 1.1;
+  margin-bottom: 1.5rem;
+  position: relative; z-index: 1;
+}
+/* Subtítulo/descripción del CTA */
+.cta-sub { font-size: 1rem; color: var(--gray-lt); margin-bottom: 3rem; position: relative; z-index: 1; }
+/* Contenedor de los botones del CTA */
+.cta-actions { position: relative; z-index: 1; display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+
+/* PIE DE PAGINA INFERIOR */
+/* Contenedor principal del footer con fondo casi negro y borde superior */
+footer {
+  background: #03040A;
+  padding: 5rem 8% 0;
+  border-top: 1px solid rgba(255,255,255,0.05);
+}
+/* Grid del footer: columna de logo más ancha y dos columnas de enlaces */
+.footer-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 4rem;
+  margin-bottom: 3rem;
+}
+/* Titulo/Logo del footer */
+.footer-logo {
+  font-family: var(--font-display);
+  font-size: 1.8rem; font-weight: 700;
+  letter-spacing: 0.1em;
+  margin-bottom: 1rem;
+}
+.footer-logo span { color: var(--red); }
+/* Descripción breve debajo del titulo/logo */
+.footer-desc { font-size: 0.82rem; color: var(--gray); line-height: 1.7; max-width: 280px; }
+
+/* Título de cada columna de enlaces del footer */
+.footer-col h4 {
+  font-size: 0.72rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 1.5rem;
+}
+
+/* Menú secundario de navegación en el footer */
+.footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 0.8rem; }
+.footer-col ul a {
+  font-size: 0.82rem; color: var(--gray);
+  text-decoration: none; transition: color 0.3s;
+}
+.footer-col ul a:hover { color: var(--white); }
+
+/* Zona inferior: copyright a la izquierda, boton de logout a la derecha */
+.footer-bottom {
+  border-top: 1px solid rgba(255,255,255,0.05);
+  padding: 2rem 0;
+  display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: 1rem;
+}
+.footer-copy { font-size: 0.75rem; color: var(--gray); }
+.footer-copy span { color: var(--red); }
+
+/* Botón de cerrar sesión - redirige al loggin */
+.logout-btn {
+  font-size: 0.75rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--gray);
+  text-decoration: none;
+  border: 1px solid rgb(255, 0, 0);
+  padding: 0.4rem 1rem;
+  border-radius: 2px;
+  transition: color 0.3s, border-color 0.3s;
+}
+/* Boton de cerrar sesion, se ilumina de rojo al pasar por encima */
+.logout-btn:hover { color: var(--red) !important; border-color: var(--red) !important; }
+
+/* Estado inicial oculto para animación al hacer scroll */
+.reveal { opacity: 0; transform: translateY(40px); transition: opacity 0.7s ease, transform 0.7s ease; }
+/* Estado visible cuando el elemento entra en pantalla (clase añadida por JS) */
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+  /* Ícono de búsqueda que enlaza a Google.com */
+.nav-search {
+  color: var(--gray-lt);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  transition: color 0.3s;
+}
+.nav-search:hover { color: var(--gold); }
+.nav-search svg { width: 20px; height: 20px; }
+
+/* Ícono de redes sociales en la barra de navegacion */
+.nav-social { display: flex; align-items: center; gap: 0.9rem; margin-left: 1.5rem; margin-right: 0.6rem; }
+.nav-social a { color: #BBBBCC; display: flex; transition: color 0.3s; }
+.nav-social a:hover { color: var(--gold); }
+.nav-social svg { width: 18px; height: 18px; }
+
+/* Contenedor principal del hero: colocado en fila y con animación de aparición */
+.hero-section {
+  display: flex;
+  align-items: center;
+  gap: 3rem;
+  width: 100%;
+  min-height: 760px;
+  padding: 0 8%;
+  position: relative;
+  z-index: 10;
+  opacity: 0;
+  animation: heroReveal 1.2s ease 0.3s forwards;
+}
+
+/* Carrusel de Posters */
+.hero-carousel {
+  /* Ancho de cada póster: se adapta a la pantalla */
+  --pw: clamp(230px, 21vw, 320px);
+  position: absolute; right: 7%; top: 50%; transform: translateY(-46%);
+  width: calc(var(--pw) * 1.85);
+  display: flex; flex-direction: column; align-items: center; gap: 1.6rem;
+  z-index: 5;
+}
+/* Escenario: el póster activo al centro y los vecinos asomando detrás */
+.carousel-stage { position: relative; width: 100%; height: calc(var(--pw) * 1.5); touch-action: pan-y; }
+.carousel-stage::before { /* halo de luz detrás del póster activo */
+  content: ''; position: absolute; left: 50%; top: 50%; width: 120%; height: 90%;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(closest-side, rgba(229, 9, 20, 0.16), transparent 70%);
+  pointer-events: none;
+}
+.carousel-slide {
+  position: absolute; top: 0; left: 50%; width: var(--pw); aspect-ratio: 2 / 3;
+  margin-left: calc(var(--pw) / -2);
+  border-radius: 18px; overflow: hidden;
+  background: #12141F;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.55);
+  opacity: 0; transform: scale(0.7); pointer-events: none;
+  transition: transform 0.8s cubic-bezier(.2,.8,.2,1), opacity 0.8s ease, filter 0.8s ease;
+}
+.carousel-slide img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.carousel-slide.is-active {
+  opacity: 1; transform: none; z-index: 3; pointer-events: auto;
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+.carousel-slide.is-prev, .carousel-slide.is-next {
+  opacity: 0.55; z-index: 2; filter: brightness(0.55) saturate(0.8); pointer-events: auto; cursor: pointer;
+}
+.carousel-slide.is-prev { transform: translateX(-52%) scale(0.8); }
+.carousel-slide.is-next { transform: translateX(52%) scale(0.8); }
+
+/* Controles: flechas, título y contador */
+.carousel-controls { display: flex; align-items: center; gap: 1.2rem; width: calc(var(--pw) * 1.25); }
+.carousel-arrow {
+  width: 42px; height: 42px; flex-shrink: 0; border-radius: 50%; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(255, 255, 255, 0.06); color: var(--white);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  transition: background 0.25s, border-color 0.25s, transform 0.2s;
+}
+.carousel-arrow:hover { background: rgba(255, 255, 255, 0.14); border-color: rgba(255, 255, 255, 0.35); transform: scale(1.06); }
+.carousel-arrow svg { width: 18px; height: 18px; }
+.carousel-caption { flex: 1; min-width: 0; text-align: center; }
+.carousel-title {
+  display: block; font-size: 1rem; font-weight: 500; color: var(--white);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.carousel-count { display: block; margin-top: 3px; font-size: 0.78rem; letter-spacing: 0.18em; color: var(--gold); }
+.carousel-progress { height: 2px; margin-top: 8px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; }
+.carousel-progress span { display: block; height: 100%; width: 0; background: var(--gold); }
+.carousel-progress span.run { animation: carouselBar 4.5s linear forwards; }
+@keyframes carouselBar { from { width: 0; } to { width: 100%; } }
+
+/* Grilla de destacadas: 5 / 3 / 2 columnas según el ancho */
+@media (max-width: 1100px) { .movies-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 600px)  { .movies-grid { grid-template-columns: repeat(2, 1fr); gap: 1rem; } }
+
+/* ---- Responsivo del inicio ---- */
+@media (max-width: 1100px) {
+  #hero { height: auto; min-height: 0; flex-direction: column; align-items: stretch; padding: 120px 0 4rem; gap: 2.5rem; }
+  .hero-content { max-width: 680px; padding: 0 8%; }
+  .hero-title { font-size: clamp(3rem, 9vw, 5rem); }
+  .hero-carousel { --pw: min(280px, 52vw); position: relative; right: auto; top: auto; transform: none; margin: 0 auto; }
+}
+@media (max-width: 600px) {
+  #hero { padding-top: 96px; }
+  .hero-carousel { --pw: min(230px, 54vw); width: 100%; }
+  .carousel-controls { width: 100%; padding: 0 6%; }
+  #featured { padding-top: 4rem !important; }
+  .featured-header { margin-bottom: 2rem; }
+  #news { padding: 5rem 6% !important; }
+  #news > div[style*="grid-template-columns"] { grid-template-columns: 1fr !important; }
+}
+
+
+#moviesGrid { gap: 2.2rem 1.6rem; }
+</style>
+<link rel="stylesheet" href="assets/css/cineverse-ui.css">
+</head>
+<body>
+
+<!--  BARRA DE NAVEGACION SUPERIOR -->
+<!-- Barra de navegación principal -->
+<nav id="navbar" class="nav-transparent">
+  <a href="index.html" class="nav-logo" aria-label="CineVerse, ir al inicio">
+    <img src="data:image/svg+xml,%3Csvg width='34' height='34' viewBox='0 0 36 36' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='18' cy='18' r='17' stroke='%23C9A84C' stroke-width='1.2'/%3E%3Ccircle cx='18' cy='18' r='11' stroke='%23C9A84C' stroke-width='0.5' opacity='0.2'/%3E%3Ccircle cx='18' cy='2.8' r='1.6' fill='%23C9A84C'/%3E%3Ccircle cx='18' cy='33.2' r='1.6' fill='%23C9A84C'/%3E%3Ccircle cx='2.8' cy='18' r='1.6' fill='%23C9A84C'/%3E%3Ccircle cx='33.2' cy='18' r='1.6' fill='%23C9A84C'/%3E%3Cpolygon points='14,11.5 14,24.5 25,18' fill='%23E50914'/%3E%3Cpath d='M31.5,5 L32,6.5 L33.5,7 L32,7.5 L31.5,9 L31,7.5 L29.5,7 L31,6.5 Z' fill='%23C9A84C' opacity='0.6'/%3E%3C/svg%3E" alt="" width="34" height="34">
+    <b class="logo-word">Cine<span>Verse</span></b>
+  </a>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="index.html" class="active" aria-current="page">Inicio</a></li>
+    <li><a href="catalogo.html">Catálogo</a></li>
+    <li><a href="SobreNosotros.html">Sobre nosotros</a></li>
+  </ul>
+  <div class="nav-actions">
+    <a href="catalogo.html?buscar=1" class="nav-search" aria-label="Buscar películas" title="Buscar películas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></a>
+    <a href="perfil.html" class="nav-cta" id="navProfile" style="display:none;">Mi perfil</a>
+    <a href="login.html" class="nav-cta" id="navLogin">Inicia sesión</a>
+    <button type="button" class="nav-toggle" aria-label="Abrir menú" aria-expanded="false" aria-controls="navLinks"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+
+<!-- PORTADA PRINCIPAL -->
+<section id="hero">
+  <div class="hero-bg-fallback"></div>
+  <div class="scan-lines"></div>
+
+  <div class="hero-content">
+    <h1 class="hero-title">
+      Tu universo de
+      <em>películas</em>
+    </h1>
+    <p class="hero-sub">
+      Descubre los estrenos del momento, mira sus tráileres
+      y guarda tus películas favoritas en un solo lugar.
+    </p>
+    <div class="hero-actions">
+      <a href="registro.html" class="btn-primary" id="heroComenzarBtn">
+        <span>Comienza Ahora</span>
+        <span></span>
+      </a>
+      <a href="catalogo.html" class="btn-ghost">
+        <span>Ver Catálogo</span>
+      </a>
+    </div>
+  </div>
+    <!-- CARRUSEL DE IMAGENES DESDE "TMDB" -->
+    <div class="hero-carousel">
+      <div class="carousel-stage" id="carouselTrack" aria-roledescription="carrusel" aria-label="Películas populares">
+        <div class="carousel-slide"><img src="https://image.tmdb.org/t/p/w500/or06FN3Dka5tukK1e9sl16pB3iy.jpg" alt="Avengers: Endgame"></div>
+        <div class="carousel-slide"><img src="https://image.tmdb.org/t/p/w500/z7uo9zmQdQwU5ZJHFpv2Upl30i1.jpg" alt="Harry Potter y el misterio del príncipe"></div>
+        <div class="carousel-slide"><img src="https://image.tmdb.org/t/p/w500/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg" alt="Interstellar"></div>
+        <div class="carousel-slide"><img src="https://image.tmdb.org/t/p/w500/74xTEgt7R36Fpooo50r9T25onhq.jpg" alt="The Batman"></div>
+        <div class="carousel-slide"><img src="https://image.tmdb.org/t/p/w500/fECBtHlr0RB3foNHDiCBXeg9Bv9.jpg" alt="Harry Potter y el cáliz de fuego"></div>
+        <div class="carousel-slide"><img src="https://image.tmdb.org/t/p/w500/6JjfSchsU6daXk2AKX8EEBjO3Fm.jpg" alt="Spider-Man: No Way Home"></div>
+        <div class="carousel-slide"><img src="https://image.tmdb.org/t/p/w500/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg" alt="Oppenheimer"></div>
+        <div class="carousel-slide"><img src="https://image.tmdb.org/t/p/w500/wuMc08IPKEatf9rnMNXvIDxqP4W.jpg" alt="Harry Potter y la piedra filosofal"></div>
+        <div class="carousel-slide"><img src="https://image.tmdb.org/t/p/w500/vZloFAK7NmvMGKE7VkF5UHaz0I.jpg" alt="John Wick 4"></div>
+        <div class="carousel-slide"><img src="https://image.tmdb.org/t/p/w500/iuFNMS8U5cb6xfzi51Dbkovj7vM.jpg" alt="Barbie"></div>
+        <div class="carousel-slide"><img src="https://image.tmdb.org/t/p/w500/iGoXIpQb7Pot00EEdwpwPajheZ5.jpg" alt="Harry Potter y las Reliquias de la Muerte: Parte 1"></div>
+        <div class="carousel-slide"><img src="https://image.tmdb.org/t/p/w500/qNBAXBIQlnOThrVvA6mA2B5ggV6.jpg" alt="Super Mario Bros"></div>
+        <div class="carousel-slide"><img src="https://image.tmdb.org/t/p/w500/c54HpQmuwXjHq2C9wmoACjxoom3.jpg" alt="Harry Potter y las Reliquias de la Muerte: Parte 2"></div>
+        <div class="carousel-slide"><img src="https://image.tmdb.org/t/p/w500/r2J02Z2OpNTctfOSN1Ydgii51I3.jpg" alt="Guardians of the Galaxy Vol. 3"></div>
+        <div class="carousel-slide"><img src="https://image.tmdb.org/t/p/w500/t6HIqrRAclMCA60NsSmeqe9RmNV.jpg" alt="Avatar: The Way of Water"></div>
+        <div class="carousel-slide"><img src="https://image.tmdb.org/t/p/w500/jntLBq0MLR3hrwKaTQswxACRPMs.jpg" alt="Harry Potter: Regreso a Hogwarts"></div>
+        <div class="carousel-slide"><img src="https://image.tmdb.org/t/p/w500/udDclJoHjfjb8Ekgsd4FDteOkCU.jpg" alt="Joker"></div>
+        <div class="carousel-slide"><img src="https://image.tmdb.org/t/p/w500/7IiTTgloJzvGI1TAYymCfbfl3vT.jpg" alt="Parasite"></div>
+        <div class="carousel-slide"><img src="https://image.tmdb.org/t/p/w500/q6y0Go1tsGEsmtFryDOJo3dEmqu.jpg" alt="The Shawshank Redemption"></div>
+        <div class="carousel-slide"><img src="https://image.tmdb.org/t/p/w500/5aOyriWkPec0zUDxmHFP9qMmBaj.jpg" alt="Harry Potter y la Orden del Fénix"></div>
+        <div class="carousel-slide"><img src="https://image.tmdb.org/t/p/w500/edv5CZvWj09upOsy2Y6IwDhK8bt.jpg" alt="Inception"></div>
+        <div class="carousel-slide"><img src="https://image.tmdb.org/t/p/w500/bRwnj8WEKBCvmfeUNOukJPwB43K.jpg" alt="Obsession"></div>
+        <div class="carousel-slide"><img src="https://image.tmdb.org/t/p/w500/pB8BM7pdSp6B6Ih7QZ4DrQ3PmJK.jpg" alt="Fight Club"></div>
+      </div>
+      <div class="carousel-controls">
+        <button type="button" class="carousel-arrow" id="carouselPrev" aria-label="Póster anterior"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+        <div class="carousel-caption" aria-live="polite">
+          <span class="carousel-title" id="carouselTitle"></span>
+          <span class="carousel-count" id="carouselCount"></span>
+          <div class="carousel-progress"><span id="carouselBar"></span></div>
+        </div>
+        <button type="button" class="carousel-arrow" id="carouselNext" aria-label="Póster siguiente"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></button>
+      </div>
+    </div>
+</section>
+
+
+<!-- PELÍCULAS DESTACADAS -->
+<!-- Las tarjetas se cargan dinámicamente desde TMDB API -->
+<section id="featured">
+  <div class="featured-header reveal">
+    <div>
+      <h2 class="section-title">Películas <em>Destacadas</em></h2>
+    </div>
+    <a href="catalogo.html" class="btn-ghost" style="font-size:0.78rem;padding:0.7rem 1.4rem;">Ver todo</a>
+  </div>
+  <!-- Forma cuadrada de las peliculas que se llena con JavaScript al cargar desde la API -->
+  <div class="movies-grid" id="moviesGrid">
+    <div class="movie-skeleton"></div>
+    <div class="movie-skeleton"></div>
+    <div class="movie-skeleton"></div>
+    <div class="movie-skeleton"></div>
+    <div class="movie-skeleton"></div>
+    <div class="movie-skeleton"></div>
+  </div>
+</section>
+
+<!-- NOTICIAS Y NOVEDADES DEL CINE -->
+<!-- Tres noticias relevantes: 2 artículos y 1 video -->
+<section id="news" style="padding:8rem 8%;background:var(--bg);">
+  <div class="reveal" style="margin-bottom:4rem;">
+    <h2 class="section-title">Noticias del <em>Cine</em></h2>
+    <p style="font-size:0.88rem;color:var(--gray);max-width:500px;line-height:1.7;margin-top:0.8rem;">
+      Estrenos, taquilla y festivales: lo más reciente del mundo del cine.
+    </p>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:2rem;">
+
+    <!-- Artículo 1 -->
+    <article class="reveal" style="background:var(--surface);border:1px solid rgba(255,255,255,0.05);border-radius:4px;overflow:hidden;transition:border-color 0.3s,transform 0.3s;display:flex;flex-direction:column;"
+      onmouseover="this.style.borderColor='rgba(201,168,76,0.3)';this.style.transform='translateY(-4px)'"
+      onmouseout="this.style.borderColor='rgba(255,255,255,0.05)';this.style.transform='translateY(0)'">
+      <div style="background:linear-gradient(135deg,#0D0F1A,#1E2038);padding:2rem 2rem 1rem;display:flex;align-items:center;justify-content:center;gap:0.7rem;">
+        <span style="font-size:1.8rem;"></span>
+        <span style="font-size:0.9rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);font-weight:500;">Artículo</span>
+      </div>
+      <div style="padding:1.5rem 2rem 2rem;flex:1;display:flex;flex-direction:column;">
+        <h3 style="font-family:var(--font-display);font-size:1.25rem;font-weight:600;line-height:1.3;margin-bottom:0.8rem;">
+          «Supergirl» se encamina a perder 100 millones de dólares
+        </h3>
+        <p style="font-size:0.82rem;color:var(--gray);line-height:1.7;flex:1;">
+          El estreno de «Supergirl» recaudó 62,6 millones de dólares en todo el mundo en su primer fin de semana, muy por debajo de lo esperado para una producción de 170 millones. Variety analiza qué significa para el nuevo universo de DC.
+        </p>
+        <a href="https://variety.com/2026/film/box-office/supergirl-box-office-bomb-dc-studios-1236797855/" target="_blank" rel="noopener"
+           style="display:inline-flex;align-items:center;gap:6px;margin-top:1.5rem;font-size:0.78rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--red);text-decoration:none;font-weight:500;transition:color 0.3s;"
+           onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--red)'">
+          Leer artículo completo
+        </a>
+      </div>
+    </article>
+
+    <!-- Artículo 2 -->
+    <article class="reveal" style="background:var(--surface);border:1px solid rgba(255,255,255,0.05);border-radius:4px;overflow:hidden;transition:border-color 0.3s,transform 0.3s;display:flex;flex-direction:column;"
+      onmouseover="this.style.borderColor='rgba(201,168,76,0.3)';this.style.transform='translateY(-4px)'"
+      onmouseout="this.style.borderColor='rgba(255,255,255,0.05)';this.style.transform='translateY(0)'">
+      <div style="background:linear-gradient(135deg,#0D0F1A,#1E2038);padding:2rem 2rem 1rem;display:flex;align-items:center;justify-content:center;gap:0.7rem;">
+        <span style="font-size:1.8rem;"></span>
+        <span style="font-size:0.9rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);font-weight:500;">Artículo</span>
+      </div>
+      <div style="padding:1.5rem 2rem 2rem;flex:1;display:flex;flex-direction:column;">
+        <h3 style="font-family:var(--font-display);font-size:1.25rem;font-weight:600;line-height:1.3;margin-bottom:0.8rem;">
+          IFF Panamá 2026: Cine es vida del 9 al 12 de abril de 2026
+        </h3>
+        <p style="font-size:0.82rem;color:var(--gray);line-height:1.7;flex:1;">
+          La 14.ª edición del Festival Internacional de Cine de Panamá se celebra del 9 al 12 de abril bajo el lema «Cine es Vida», con más de 40 películas, siete de ellas panameñas, en sedes como el Teatro Nacional, el Museo del Canal y la Ciudad de las Artes.
+        </p>
+        <a href="https://lawebdelasalud.com/iff-panama-2026-cine-es-vida-del-9-al-12-de-abril-de-2026/" target="_blank" rel="noopener"
+           style="display:inline-flex;align-items:center;gap:6px;margin-top:1.5rem;font-size:0.78rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--red);text-decoration:none;font-weight:500;transition:color 0.3s;"
+           onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--red)'">
+          Leer artículo completo
+        </a>
+      </div>
+    </article>
+
+    <!-- Video -->
+    <article class="reveal" style="background:var(--surface);border:1px solid rgba(255,255,255,0.05);border-radius:4px;overflow:hidden;transition:border-color 0.3s,transform 0.3s;display:flex;flex-direction:column;"
+      onmouseover="this.style.borderColor='rgba(229,9,20,0.3)';this.style.transform='translateY(-4px)'"
+      onmouseout="this.style.borderColor='rgba(255,255,255,0.05)';this.style.transform='translateY(0)'">
+      <div style="background:linear-gradient(135deg,#0D0F1A,#1E2038);padding:2rem 2rem 1rem;display:flex;align-items:center;justify-content:center;gap:0.7rem;">
+        <span style="font-size:1.8rem;"></span>
+        <span style="font-size:0.9rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);font-weight:500;">Video</span>
+      </div>
+      <!-- Embed de YouTube -->
+      <div style="position:relative;width:100%;aspect-ratio:16/9;background:#000;">
+        <iframe
+        src="https://www.youtube.com/embed/Vh21mUNZpZ8"
+        title="Los mejores estrenos de cine 2025"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowfullscreen="true"
+        style="position:absolute;inset:0;width:100%;height:100%;border:0;">
+        </iframe>
+      </div>
+      <div style="padding:1.5rem 2rem 2rem;flex:1;display:flex;flex-direction:column;">
+        <h3 style="font-family:var(--font-display);font-size:1.25rem;font-weight:600;line-height:1.3;margin-bottom:0.8rem;">
+          Películas 2026: los estrenos que no te puedes perder
+        </h3>
+        <p style="font-size:0.82rem;color:var(--gray);line-height:1.7;flex:1;">
+          Un repaso a los 15 estrenos más esperados de 2026: regresos de grandes franquicias, secuelas y nuevas adaptaciones de superhéroes, ciencia ficción y aventura.
+        </p>
+        <a href="https://www.youtube.com/watch?v=Vh21mUNZpZ8" target="_blank" rel="noopener"
+           style="display:inline-flex;align-items:center;gap:6px;margin-top:1.5rem;font-size:0.78rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--red);text-decoration:none;font-weight:500;transition:color 0.3s;"
+           onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--red)'">
+          Ver en YouTube
+        </a>
+      </div>
+    </article>
+
+  </div>
+</section>
+
+
+<!-- Banner de llamada a la acción para registrarse -->
+<section id="cta">
+  <div class="reveal">
+    <h2 class="cta-title">¿Listo para tu<br><em style="color:var(--red);font-style:italic;font-family:var(--font-display)">próxima película?</em></h2>
+    <p class="cta-sub">Crea tu cuenta gratis y guarda tus películas favoritas para verlas cuando quieras.</p>
+    <div class="cta-actions">
+      <a href="registro.html" class="btn-primary" style="font-size:0.9rem;padding:1.1rem 2.5rem;">Crear cuenta gratis</a>
+      <a href="login.html" class="btn-ghost" style="font-size:0.9rem;padding:1.1rem 2rem;">Ya tengo cuenta</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER INFERIOR -->
+<footer class="cv-footer">
+  <div class="cv-footer-grid">
+    <div>
+      <a href="index.html" class="cv-footer-logo">Cine<span>Verse</span></a>
+      <p>Tu universo de películas. Proyecto final de Programación de Software II, Universidad Tecnológica de Panamá, 2026.</p>
+    </div>
+    <div>
+      <h4>Navegación</h4>
+      <ul>
+        <li><a href="index.html">Inicio</a></li>
+        <li><a href="catalogo.html">Catálogo</a></li>
+        <li><a href="SobreNosotros.html">Sobre nosotros</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Mi cuenta</h4>
+      <ul>
+        <li class="cv-guest-only"><a href="registro.html">Regístrate</a></li>
+        <li class="cv-guest-only"><a href="login.html">Inicia sesión</a></li>
+        <li class="cv-user-only"><a href="perfil.html">Mi perfil</a></li>
+        <li class="cv-user-only"><a href="perfil.html">Mis favoritos</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="cv-footer-bottom">
+    <p>© 2026 <span>CineVerse</span> · Proyecto académico · Datos de películas proporcionados por TMDB, sin respaldo ni certificación de TMDB.</p>
+    <a href="login.html" id="logoutBtn" class="logout-btn cv-user-only">Cerrar sesión</a>
+  </div>
+</footer>
+<script src="assets/js/cineverse-ui.js"></script>
+
+<script>
+// CARRUSEL EN EL INICIO DE LA PAGINA
+// Póster activo al centro con el anterior y el siguiente asomando a los lados.
+// Avanza solo cada 4,5 s; se pausa con el mouse encima; flechas, teclado y deslizar con el dedo.
+(function() {
+  var stage = document.getElementById('carouselTrack');
+  if (!stage) return;
+  var slides = Array.prototype.slice.call(stage.querySelectorAll('.carousel-slide'));
+  var total = slides.length, current = 0, timer = null;
+  var title = document.getElementById('carouselTitle');
+  var count = document.getElementById('carouselCount');
+  var bar = document.getElementById('carouselBar');
+  var dos = function(n) { return (n < 10 ? '0' : '') + n; };
+
+  function render() {
+    slides.forEach(function(s, i) {
+      var d = (i - current + total) % total;
+      s.classList.toggle('is-active', d === 0);
+      s.classList.toggle('is-next', d === 1);
+      s.classList.toggle('is-prev', d === total - 1);
+      s.setAttribute('aria-hidden', d === 0 ? 'false' : 'true');
+    });
+    title.textContent = slides[current].querySelector('img').alt;
+    count.textContent = dos(current + 1) + ' / ' + dos(total);
+    bar.classList.remove('run'); void bar.offsetWidth; bar.classList.add('run'); // reinicia la barra de progreso
+  }
+  function goTo(i) { current = (i + total) % total; render(); restart(); }
+  function restart() { clearInterval(timer); timer = setInterval(function() { current = (current + 1) % total; render(); }, 4500); }
+  function pause() { clearInterval(timer); bar.classList.remove('run'); }
+
+  // Clic en un póster vecino: lo trae al centro
+  slides.forEach(function(s, i) { s.addEventListener('click', function() { if (i !== current) goTo(i); }); });
+  document.getElementById('carouselPrev').addEventListener('click', function() { goTo(current - 1); });
+  document.getElementById('carouselNext').addEventListener('click', function() { goTo(current + 1); });
+
+  var carousel = stage.closest('.hero-carousel');
+  carousel.addEventListener('mouseenter', pause);
+  carousel.addEventListener('mouseleave', function() { render(); restart(); });
+  carousel.addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowLeft') goTo(current - 1);
+    if (e.key === 'ArrowRight') goTo(current + 1);
+  });
+
+  // Deslizar con el dedo en celular
+  var x0 = null;
+  stage.addEventListener('touchstart', function(e) { x0 = e.touches[0].clientX; }, { passive: true });
+  stage.addEventListener('touchend', function(e) {
+    if (x0 === null) return;
+    var dx = e.changedTouches[0].clientX - x0; x0 = null;
+    if (Math.abs(dx) > 40) goTo(current + (dx < 0 ? 1 : -1));
+  });
+
+  render(); restart();
+})();
+
+// BARRA DE NAVEGACION CON EFECTO DE SCROLL
+// Al bajar 60px, se aplica fondo oscuro con blur
+window.addEventListener('scroll', () => {
+  document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 60);
+});
+
+// Detecta cuándo un elemento entra en pantalla y le añade la clase "visible" (una sola vez).
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+      observer.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.12 });
+
+// Aplica el observador a todos los elementos que va entrando a la pantalla.
+document.querySelectorAll('.reveal, .step-card, .team-card').forEach(el => observer.observe(el));
+
+// CARGA DE PELÍCULAS DESDE TMDB API
+// Inserta las tarjetas de películas populares en la cuadrilla.
+// Si la API falla, muestra tarjetas de placeholder
+const API_KEY = '3eaf8160770351b60f1da8b97fddc6af'; // Llave de la API (desde TMDB)
+
+// Carga películas desde la API de TMDB y las renderiza como tarjetas clicables.
+async function loadMovies() {
+  const grid = document.getElementById('moviesGrid');
+  grid.innerHTML = CV.skeleton(10); // Esqueletos mientras llegan los datos
+  try {
+    const [res] = await Promise.all([
+      fetch(`https://api.themoviedb.org/3/movie/popular?api_key=${API_KEY}&language=es-MX&page=1`),
+      CV.loadFavIds() // Para marcar el corazón de las que ya son favoritas
+    ]);
+    if (!res.ok) throw new Error('Error de conexión con TMDB');
+    const data = await res.json();
+    const movies = data.results.filter(m => m.poster_path).slice(0, 10);
+    grid.innerHTML = movies.map(m => CV.cardHTML(m)).join('');
+    CV.bindCards(grid);
+  } catch (e) {
+    // Si falla la API, invita a ir al catálogo
+    grid.innerHTML = `<p style="grid-column:1/-1;color:var(--gray);text-align:center;padding:3rem 0;">
+      No pudimos cargar las películas destacadas. <a href="catalogo.html" style="color:var(--gold)">Ver catálogo</a></p>`;
+  }
+}
+
+//Ejecuta la carga de películas al iniciar
+loadMovies();
+
+// AUTENTICACIÓN DE BARRA DE NAVEGACION
+// Lee la sesión del localStorage y muestra el nombre del usuario en el nav
+(function initNav() {
+  const token = localStorage.getItem('token');
+  const user  = JSON.parse(localStorage.getItem('user') || 'null');
+  if (token && user) {
+    document.getElementById('navLogin').style.display   = 'none';
+    document.getElementById('navProfile').style.display = 'block';
+    // Muestra el nombre del usuario en el botón rojo
+    document.getElementById('navProfile').textContent   = user.nombre;
+    // Oculta el botón "Comenzar Gratis" del hero si ya hay sesión activa
+    document.getElementById('heroComenzarBtn').style.display = 'none';
+    // Oculta todo el bloque CTA "¿Listo para tu próxima película favorita?" si ya hay sesión activa
+    document.getElementById('cta').style.display = 'none';
+  }
+})();
+
+// LOGOUT DEL USUARIO
+// Al presionar "cerrar sesión": borra el token y usuario guardados en la BD, y redirige al loggin.
+document.getElementById('logoutBtn').addEventListener('click', function(e) {
+  e.preventDefault();
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+  window.location.href = 'login.html';
+});
+</script>
+</body>
+</html>

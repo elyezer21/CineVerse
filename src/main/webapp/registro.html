@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crear Cuenta — CineVerse</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    /* Reset general y variables de color/tipografía reutilizadas en toda la página */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    /* Variables de toda la web: paleta de colores y tipografías */
+    :root {
+      --red:      #E50914; /* Rojo principal de acento (botones, alertas, marca) */
+      --red-dim:  #8B0000; /* Rojo oscuro/apagado para variantes hover o sombreado */
+      --gold:     #C9A84C; /* Dorado principal (bordes, detalles premium) */
+      --gold-lt:  #F0D080; /* Dorado claro (hover, brillos) */
+      --bg:       #060810; /* Fondo principal, casi negro */
+      --bg2:      #0D0F1A; /* Fondo secundario, un poco más claro */
+      --bg3:      #12142200; /* Fondo terciario, con canal alpha en 00 (transparente) */
+      --surface:  #161828; /* Color de superficie para tarjetas/paneles */
+      --surface2: #1E2038; /* Superficie secundaria, un tono más claro */
+      --white:    #F4F4F0; /* Blanco cálido para texto principal */
+      --gray:     #8888AA; /* Gris para texto secundario */
+      --gray-lt:  #BBBBCC; /* Gris claro para texto terciario o placeholders */
+      --font-display: 'Cormorant Garamond', serif; /* Tipografía para títulos (serif elegante) */
+      --font-body:    'Outfit', sans-serif; /* Tipografía para cuerpo de texto (sans-serif) */
+    }
+
+    /* Hace un desplazamiento suave al hacer clic a una seccion de la misma página */
+    html { scroll-behavior: smooth; }
+
+    /* Estilos base del body de la página */
+    body {
+      background: var(--bg);
+      color: var(--white);
+      font-family: var(--font-body);
+      font-weight: 300;
+      overflow-x: hidden;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Capa de ruido sutil sobre toda la pantalla para dar textura de grano de película */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      opacity: 0.035;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Navbar fija con fondo oscuro y blur, igual en todas las páginas secundarias */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0;
+      z-index: 1000;
+      padding: 0 5%;
+      height: 72px;
+      display: flex; align-items: center; justify-content: space-between;
+      transition: background 0.5s, backdrop-filter 0.5s, border-color 0.5s;
+      border-bottom: 1px solid transparent;
+      background: rgba(6,8,16,0.85);
+      backdrop-filter: blur(20px);
+      border-color: rgba(201,168,76,0.12);
+    }
+
+    /* Logo "CineVerse" a la izquierda de la navbar */
+    .nav-logo {
+      font-family: var(--font-display);
+      font-size: 1.9rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      color: var(--white);
+      text-decoration: none;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .nav-logo span { color: var(--red); } /* La palabra "Verse" se resalta en rojo */
+
+    /* Lista de enlaces de navegación (Home y Sobre Nosotros) */
+    .nav-links {
+      display: flex; align-items: center; gap: 2.5rem;
+      list-style: none;
+    }
+    .nav-links a {
+      color: var(--gray-lt);
+      text-decoration: none;
+      font-size: 0.82rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      position: relative;
+      transition: color 0.3s;
+    }
+    /* Línea dorada que aparece debajo del enlace al pasar el mouse */
+    .nav-links a::after {
+      content: '';
+      position: absolute; bottom: -4px; left: 0;
+      width: 0; height: 1px;
+      background: var(--gold);
+      transition: width 0.35s ease;
+    }
+    .nav-links a:hover { color: var(--white); }
+    .nav-links a:hover::after { width: 100%; }
+
+    /* Botón rojo de "Inicia Sesión" en la navbar */
+    .nav-cta {
+      background: var(--red);
+      color: var(--white) !important;
+      padding: 0.5rem 1.4rem;
+      border-radius: 2px;
+      letter-spacing: 0.12em;
+      transition: background 0.3s, transform 0.2s !important;
+      cursor: pointer;
+    }
+    .nav-cta::after { display: none !important; }
+    .nav-cta:hover { background: #ff1a26 !important; transform: translateY(-1px); }
+
+    /* Centra el formulario verticalmente, dejando espacio para el navbar fijo */
+    main {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding-top: 100px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Animated background gradient */
+    .bg-gradient {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 70% 30%, rgba(229,9,20,0.08) 0%, transparent 70%),
+        radial-gradient(ellipse 60% 80% at 20% 80%, rgba(201,168,76,0.06) 0%, transparent 60%),
+        linear-gradient(135deg, #060810 0%, #0D1020 50%, #060810 100%);
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    /* Tarjeta del formulario de registro, más ancha que la de login por tener más campos */
+    .registro-container {
+      width: 100%;
+      max-width: 500px;
+      padding: 0 2rem;
+      animation: formReveal 0.8s ease 0.2s forwards;
+      opacity: 0;
+    }
+
+    /* Animación de aparición del formulario */
+    @keyframes formReveal {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Encabezado del formulario: título y subtítulo */
+    .form-header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+
+    .form-header h1 {
+      font-family: var(--font-display);
+      font-size: clamp(2.5rem, 6vw, 3.5rem);
+      font-weight: 700;
+      margin-bottom: 0.8rem;
+      letter-spacing: 0.05em;
+    }
+
+    /* Resalta "CineVerse" en dorado y cursiva */
+    .form-header h1 em {
+      color: var(--gold);
+      font-style: italic;
+    }
+
+    .form-header p {
+      color: var(--gray);
+      font-size: 0.9rem;
+      letter-spacing: 0.1em;
+    }
+
+    /* Cada grupo label + input, con animación escalonada de entrada */
+    .form-group {
+      margin-bottom: 1.5rem;
+      animation: slideUp 0.6s ease forwards;
+      opacity: 0;
+    }
+
+    /* Retraso escalonado para que los 5 campos no aparezcan todos a la vez */
+    .form-group:nth-child(1) { animation-delay: 0.3s; }
+    .form-group:nth-child(2) { animation-delay: 0.35s; }
+    .form-group:nth-child(3) { animation-delay: 0.4s; }
+    .form-group:nth-child(4) { animation-delay: 0.45s; }
+    .form-group:nth-child(5) { animation-delay: 0.5s; }
+
+    /* Animación de los campos del formulario deslizándose hacia arriba */
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(15px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Etiqueta dorada encima de cada campo */
+    label {
+      display: block;
+      margin-bottom: 0.6rem;
+      font-size: 0.85rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--gold);
+      font-weight: 500;
+    }
+
+    /* Campos de texto: nombre, apellido, email, contraseñas */
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="date"] {
+      width: 100%;
+      padding: 1rem;
+      background: rgba(22, 24, 40, 0.6);
+      border: 1px solid rgba(201, 168, 76, 0.2);
+      border-radius: 2px;
+      color: var(--white);
+      font-family: var(--font-body);
+      font-size: 0.95rem;
+      transition: all 0.3s ease;
+      outline: none;
+    }
+
+    input::placeholder {
+      color: rgba(136, 136, 170, 0.5);
+    }
+
+    /* Efecto al enfocar un campo: borde dorado y resplandor rojo sutil */
+    input:focus {
+      background: rgba(22, 24, 40, 0.8);
+      border-color: rgba(201, 168, 76, 0.5);
+      box-shadow: 0 0 20px rgba(229, 9, 20, 0.1);
+    }
+
+    /* Fila de dos columnas: Nombre y Apellido lado a lado */
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .form-row .form-group {
+      margin-bottom: 0;
+    }
+
+    /* Checkbox de aceptación de términos */
+    .terms-check {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.8rem;
+      font-size: 0.85rem;
+      color: var(--gray-lt);
+      margin: 2rem 0;
+      line-height: 1.5;
+    }
+
+    .terms-check input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      margin-top: 2px;
+      cursor: pointer;
+      accent-color: var(--gold);
+      flex-shrink: 0;
+    }
+
+    .terms-check a {
+      color: var(--gold);
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+
+    .terms-check a:hover {
+      color: var(--white);
+    }
+
+    /* Contenedor del botón "Crear Mi Cuenta" */
+    .form-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      animation: slideUp 0.6s ease 0.55s forwards;
+      opacity: 0;
+    }
+
+    /* Botón rojo principal: enviar el formulario de registro */
+    .btn-primary {
+      padding: 1rem;
+      background: var(--red);
+      color: var(--white);
+      border: none;
+      border-radius: 2px;
+      font-family: var(--font-body);
+      font-size: 0.95rem;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Capa que se desliza como efecto del botón primario */
+    .btn-primary::before {
+      content: '';
+      position: absolute;
+      top: 0; left: -100%;
+      width: 100%; height: 100%;
+      background: #ff1a26;
+      transition: left 0.3s ease;
+      z-index: -1;
+    }
+
+    /* Efecto del botón */
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(229, 9, 20, 0.3);
+    }
+
+    .btn-primary:hover::before {
+      left: 0;
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Texto inferior con enlace a la página de login */
+    .login-link {
+      text-align: center;
+      font-size: 0.9rem;
+      color: var(--gray-lt);
+    }
+
+    .login-link a {
+      color: var(--gold);
+      text-decoration: none;
+      font-weight: 500;
+      position: relative;
+      transition: color 0.3s ease;
+    }
+
+    /* Línea dorada animada debajo del enlace al pasar el mouse por encima */
+    .login-link a::after {
+      content: '';
+      position: absolute;
+      bottom: -2px; left: 0;
+      width: 0; height: 1px;
+      background: var(--gold);
+      transition: width 0.3s ease;
+    }
+
+    .login-link a:hover {
+      color: var(--white);
+    }
+
+    .login-link a:hover::after {
+      width: 100%;
+    }
+
+    /* Mensaje de validación bajo cada input se muestra solo cuando el campo falla */
+    .error-message {
+      display: none;
+      color: #ff6b6b;
+      font-size: 0.85rem;
+      margin-top: 0.4rem;
+      animation: shake 0.3s ease;
+    }
+
+    /* Animación de sacudida horizontal (usada para notar errores de validación) */
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
+    }
+
+    /* Pie de página con menú secundario, copyright y logout */
+    footer {
+      background: rgba(6, 8, 16, 0.5);
+      border-top: 1px solid rgba(201, 168, 76, 0.1);
+      padding: 2rem;
+      text-align: center;
+      color: var(--gray);
+      font-size: 0.85rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    footer a {
+      color: var(--gold);
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+
+    footer a:hover {
+      color: var(--white);
+    }
+
+/* Botón de cerrar sesión - redirige al login */
+.logout-btn:hover { color: var(--red) !important; border-color: var(--red) !important; }
+  
+  /* Ícono de búsqueda que enlaza a Google.com */
+.nav-search {
+  color: var(--gray-lt);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  transition: color 0.3s;
+}
+.nav-search:hover { color: var(--gold); }
+.nav-search svg { width: 20px; height: 20px; }
+
+/* Ícono de redes sociales */
+.nav-social { display: flex; align-items: center; gap: 0.9rem; margin-left: 1.5rem; margin-right: 0.6rem; }
+.nav-social a { color: #BBBBCC; display: flex; transition: color 0.3s; }
+.nav-social a:hover { color: var(--gold); }
+.nav-social svg { width: 18px; height: 18px; }
+  
+    .form-row { margin-bottom: 1.5rem; }
+    @media (max-width: 480px) { .form-row { grid-template-columns: 1fr; gap: 0; } .form-row .form-group { margin-bottom: 1.5rem; } }
+
+</style>
+<link rel="stylesheet" href="assets/css/cineverse-ui.css">
+</head>
+<body>
+<!-- Fondo degradado fijo detrás de todo el contenido -->
+<div class="bg-gradient"></div>
+
+<!--  BARRA DE NAVEGACION SUPERIOR -->
+<!-- Barra de navegación -->
+<nav id="navbar">
+  <a href="index.html" class="nav-logo" aria-label="CineVerse, ir al inicio">
+    <img src="data:image/svg+xml,%3Csvg width='34' height='34' viewBox='0 0 36 36' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='18' cy='18' r='17' stroke='%23C9A84C' stroke-width='1.2'/%3E%3Ccircle cx='18' cy='18' r='11' stroke='%23C9A84C' stroke-width='0.5' opacity='0.2'/%3E%3Ccircle cx='18' cy='2.8' r='1.6' fill='%23C9A84C'/%3E%3Ccircle cx='18' cy='33.2' r='1.6' fill='%23C9A84C'/%3E%3Ccircle cx='2.8' cy='18' r='1.6' fill='%23C9A84C'/%3E%3Ccircle cx='33.2' cy='18' r='1.6' fill='%23C9A84C'/%3E%3Cpolygon points='14,11.5 14,24.5 25,18' fill='%23E50914'/%3E%3Cpath d='M31.5,5 L32,6.5 L33.5,7 L32,7.5 L31.5,9 L31,7.5 L29.5,7 L31,6.5 Z' fill='%23C9A84C' opacity='0.6'/%3E%3C/svg%3E" alt="" width="34" height="34">
+    <b class="logo-word">Cine<span>Verse</span></b>
+  </a>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="index.html">Inicio</a></li>
+    <li><a href="catalogo.html">Catálogo</a></li>
+    <li><a href="SobreNosotros.html">Sobre nosotros</a></li>
+  </ul>
+  <div class="nav-actions">
+    <a href="catalogo.html?buscar=1" class="nav-search" aria-label="Buscar películas" title="Buscar películas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></a>
+    <a href="login.html" class="nav-cta">Inicia sesión</a>
+    <button type="button" class="nav-toggle" aria-label="Abrir menú" aria-expanded="false" aria-controls="navLinks"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+
+<!-- Formulario de registro: nombre, apellido, email, password y confirmación,
+     con validación en el cliente antes de mandar los datos al servlet (registro.jsp) -->
+<main>
+  <div class="registro-container">
+    <div class="form-header">
+      <h1>Únete a <em>CineVerse</em></h1>
+      <p>Crea tu cuenta gratis y guarda tus películas favoritas.</p>
+    </div>
+<!-- Campo Nombre -->
+    <form id="registroForm">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="nombre">Nombre</label>
+          <input 
+            type="text" 
+            id="nombre" 
+            name="nombre" 
+            placeholder="Tu nombre"
+            required
+          >
+          <div class="error-message" id="error-nombre"></div>
+        </div>
+<!-- Campo Apellido -->
+        <div class="form-group">
+          <label for="apellido">Apellido</label>
+          <input 
+            type="text" 
+            id="apellido" 
+            name="apellido" 
+            placeholder="Tu apellido"
+            required
+          >
+          <div class="error-message" id="error-apellido"></div>
+        </div>
+      </div>
+<!-- Campo Correo electronico -->
+      <div class="form-group">
+        <label for="email">Correo Electrónico</label>
+        <input 
+          type="email" 
+          id="email" 
+          name="email" 
+          placeholder="tu@email.com"
+          required
+        >
+        <div class="error-message" id="error-email"></div>
+      </div>
+<!-- Campo Contraseña -->
+      <div class="form-group">
+        <label for="password">Contraseña</label>
+        <input 
+          type="password" 
+          id="password" 
+          name="password" 
+          placeholder="••••••••"
+          required
+        >
+        <div class="error-message" id="error-password"></div>
+      </div>
+<!-- Campo Confirmar Contraseña -->
+      <div class="form-group">
+        <label for="password-confirm">Confirmar Contraseña</label>
+        <input 
+          type="password" 
+          id="password-confirm" 
+          name="password-confirm" 
+          placeholder="••••••••"
+          required
+        >
+        <div class="error-message" id="error-password-confirm"></div>
+      </div>
+<!-- Checkbox de terminos y condiciones -->
+      <div class="terms-check">
+        <input type="checkbox" id="terms" name="terms" required>
+        <label for="terms" style="margin: 0; text-transform: none; color: var(--gray-lt);">
+          Acepto los <a href="#">Términos de Servicio</a> y la <a href="#">Política de Privacidad</a>
+        </label>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn-primary">Crear Mi Cuenta</button>
+      </div>
+    </form>
+
+    <div class="login-link">
+      ¿Ya tienes cuenta? <a href="login.html">Inicia sesión aquí</a>
+    </div>
+  </div>
+</main>
+
+
+<!-- FOOTER INFERIOR Menú secundario de navegación, copyright y botón de cerrar sesión que redirige al loggin -->
+<footer class="cv-footer">
+  <div class="cv-footer-grid">
+    <div>
+      <a href="index.html" class="cv-footer-logo">Cine<span>Verse</span></a>
+      <p>Tu universo de películas. Proyecto final de Programación de Software II, Universidad Tecnológica de Panamá, 2026.</p>
+    </div>
+    <div>
+      <h4>Navegación</h4>
+      <ul>
+        <li><a href="index.html">Inicio</a></li>
+        <li><a href="catalogo.html">Catálogo</a></li>
+        <li><a href="SobreNosotros.html">Sobre nosotros</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Mi cuenta</h4>
+      <ul>
+        <li class="cv-guest-only"><a href="registro.html">Regístrate</a></li>
+        <li class="cv-guest-only"><a href="login.html">Inicia sesión</a></li>
+        <li class="cv-user-only"><a href="perfil.html">Mi perfil</a></li>
+        <li class="cv-user-only"><a href="perfil.html">Mis favoritos</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="cv-footer-bottom">
+    <p>© 2026 <span>CineVerse</span> · Proyecto académico · Datos de películas proporcionados por TMDB, sin respaldo ni certificación de TMDB.</p>
+    <a href="login.html" id="logoutBtn" class="logout-btn cv-user-only">Cerrar sesión</a>
+  </div>
+</footer>
+<script src="assets/js/cineverse-ui.js"></script>
+
+<script>
+
+// Valida los campos en el navegador antes de llamar al servlet: si algo falla,
+// muestra el mensaje correspondiente.
+document.getElementById('registroForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+
+  // Oculta errores de un intento anterior antes de validar de nuevo
+  document.querySelectorAll('.error-message').forEach(el => el.style.display = 'none');
+
+  // Toma los valores escritos en todos los campos del formulario
+  const nombre = document.getElementById('nombre').value.trim();
+  const apellido = document.getElementById('apellido').value.trim();
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  const passwordConfirm = document.getElementById('password-confirm').value;
+  const terms = document.getElementById('terms').checked;
+
+  let hasError = false;
+
+  // Reglas mínimas: longitud de nombre/contraseña, formato de email,
+  // contraseñas coincidentes y términos aceptados.
+  if (nombre.length < 2) {
+    showError('error-nombre', 'El nombre debe tener al menos 2 caracteres');
+    hasError = true;
+  }
+
+  if (apellido.length < 2) {
+    showError('error-apellido', 'El apellido debe tener al menos 2 caracteres');
+    hasError = true;
+  }
+
+  if (!isValidEmail(email)) {
+    showError('error-email', 'Ingresa un email válido');
+    hasError = true;
+  }
+
+  if (password.length < 8) {
+    showError('error-password', 'La contraseña debe tener al menos 8 caracteres');
+    hasError = true;
+  }
+
+  if (password !== passwordConfirm) {
+    showError('error-password-confirm', 'Las contraseñas no coinciden');
+    hasError = true;
+  }
+
+  if (!terms) {
+    alert('Debes aceptar los términos de servicio');
+    hasError = true;
+  }
+
+  if (hasError) return;
+
+  try {
+    // Envía los datos al servlet registro.jsp para crear la cuenta en la BD
+    const response = await fetch('api/registro.jsp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nombre, apellido, email, password })
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      // Cuenta creada correctamente: redirige al login
+      alert('¡Cuenta creada exitosamente! Por favor inicia sesión.');
+      window.location.href = 'login.html';
+    } else {
+      alert(data.message || 'Error al crear la cuenta.');
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    alert('Error de conexión con el servidor.');
+  }
+});
+
+// Muestra el texto de error debajo del input correspondiente
+function showError(elementId, message) {
+  const el = document.getElementById(elementId);
+  el.textContent = message;
+  el.style.display = 'block';
+}
+
+// Chequeo simple de formato de email (no sustituye la validación del navegador)
+function isValidEmail(email) {
+  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return re.test(email);
+}
+</script>
+
+</body>
+</html>

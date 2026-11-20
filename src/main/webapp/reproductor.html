@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reproductor — CineVerse</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    /* Reset general y variables de color/tipografía usadas en toda la página */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    /* Variables de toda la web: paleta de colores y tipografías */
+    :root {
+      --red:      #E50914; /* Rojo principal de acento (botones, alertas, marca) */
+      --red-dim:  #8B0000; /* Rojo oscuro/apagado para variantes hover o sombreado */
+      --gold:     #C9A84C; /* Dorado principal (bordes, detalles premium) */
+      --gold-lt:  #F0D080; /* Dorado claro (hover, brillos) */
+      --bg:       #060810; /* Fondo principal, casi negro */
+      --bg2:      #0D0F1A; /* Fondo secundario, un poco más claro */
+      --bg3:      #12142200; /* Fondo terciario, con canal alpha en 00 (transparente) */
+      --surface:  #161828; /* Color de superficie para tarjetas/paneles */
+      --surface2: #1E2038; /* Superficie secundaria, un tono más claro */
+      --white:    #F4F4F0; /* Blanco cálido para texto principal */
+      --gray:     #8888AA; /* Gris para texto secundario */
+      --gray-lt:  #BBBBCC; /* Gris claro para texto terciario o placeholders */
+      --font-display: 'Cormorant Garamond', serif; /* Tipografía para títulos (serif elegante) */
+      --font-body:    'Outfit', sans-serif; /* Tipografía para cuerpo de texto (sans-serif) */
+    }
+    
+    /* Hace un desplazamiento suave al hacer clic a una seccion de la misma página */
+    html { scroll-behavior: smooth; }
+    
+    /* Estilos base del body de la página */
+    body {
+      background: var(--bg);
+      color: var(--white);
+      font-family: var(--font-body);
+      font-weight: 300;
+      overflow-x: hidden;
+    }
+    /* Capa de ruido sutil para dar textura de grano de película */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      opacity: 0.035;
+      pointer-events: none;
+      z-index: 0;
+    }
+/* Barra de navegacion fija con fondo oscuro y blur, igual en todas las páginas */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0;
+      z-index: 1000;
+      padding: 0 5%;
+      height: 72px;
+      display: flex; align-items: center; justify-content: space-between;
+      transition: background 0.5s, backdrop-filter 0.5s, border-color 0.5s;
+      border-bottom: 1px solid transparent;
+      background: rgba(6,8,16,0.85);
+      backdrop-filter: blur(20px);
+      border-color: rgba(201,168,76,0.12);
+    }
+    /* Titulo "CineVerse" en la esquina izquierda de la barra de navegacion */
+    .nav-logo {
+      font-family: var(--font-display);
+      font-size: 1.9rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      color: var(--white);
+      text-decoration: none;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .nav-logo span { color: var(--red); } /* La palabra "Verse" se resalta en rojo */
+    
+    /* Lista de enlaces de navegación (Home, catalogo y Sobre Nosotros) */
+    .nav-links {
+      display: flex; align-items: center; gap: 2.5rem;
+      list-style: none;
+    }
+    
+    /* Estilos de las listas de enlaces de navegación */
+    .nav-links a {
+      color: var(--gray-lt);
+      text-decoration: none;
+      font-size: 0.82rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      position: relative;
+      transition: color 0.3s;
+    }
+    /* Línea dorada que aparece debajo del enlace al pasar el mouse */
+    .nav-links a::after {
+      content: '';
+      position: absolute; bottom: -4px; left: 0;
+      width: 0; height: 1px;
+      background: var(--gold);
+      transition: width 0.35s ease;
+    }
+    .nav-links a:hover { color: var(--white); }
+    .nav-links a:hover::after { width: 100%; }
+    
+    /* Botón rojo de "Inicia Sesión", "Regístrate" o "Mi Perfil" */
+    .nav-cta {
+      background: var(--red);
+      color: var(--white) !important;
+      padding: 0.5rem 1.4rem;
+      border-radius: 2px;
+      letter-spacing: 0.12em;
+      transition: background 0.3s, transform 0.2s !important;
+      cursor: pointer;
+    }
+    .nav-cta::after { display: none !important; } /* Sin línea inferior, a diferencia de los otros enlaces */
+    .nav-cta:hover { background: #ff1a26 !important; transform: translateY(-1px); } /* Al pasar el mouse por el boton se hace color "rojo blancuzco" */
+   
+    /* Reproductor a pantalla completa con el iframe de YouTube o Drive */
+    main { position: relative; z-index: 1; }
+    .player-section {
+      width: 100%;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(135deg, rgba(6,8,16,0.95) 0%, rgba(13,15,26,0.95) 100%);
+    }
+    .video-player {
+      width: 90%;
+      max-width: 1400px;
+      aspect-ratio: 16 / 9;
+      background: #000;
+      border-radius: 4px;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(229, 9, 20, 0.2);
+      animation: playerReveal 0.8s ease;
+      position: relative;
+    }
+   
+    /* Animación de aparición del reproductor */
+    @keyframes playerReveal {
+      from { opacity: 0; transform: scale(0.95); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+    
+    /* Iframe del video ocupa todo el contenedor sin borde */
+    .video-player iframe { width: 100%; height: 100%; border: none; }
+   
+    /* Estado de espera mientras carga el trailer o si la película no tiene video */
+    .no-trailer {
+      width: 100%; height: 100%;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 1rem;
+      background: linear-gradient(135deg, #0D0F1A, #1A1C2E);
+      color: var(--gray);
+      font-size: 0.9rem;
+      letter-spacing: 0.1em;
+    }
+    .no-trailer span { font-size: 3rem; }
+   
+    /* Ficha de la película: poster a la izquierda, datos y sinopsis a la derecha */
+    .details-section {
+      padding: 4rem 5%;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    
+     /* Boton de retroceder (Volver al catalogo) */
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--gold);
+      text-decoration: none;
+      font-size: 0.9rem;
+      letter-spacing: 0.1em;
+      margin-bottom: 2rem;
+      transition: all 0.3s ease;
+    }
+   
+    /* Efecto del boton de retroceder (Volver al catalogo) */
+    .back-btn:hover { transform: translateX(-5px); color: var(--white); }
+    
+    /* Detalles de la pelicula */
+    .movie-details {
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      gap: 3rem;
+      margin-bottom: 3rem;
+      animation: slideUp 0.8s ease 0.2s forwards;
+      opacity: 0;
+    }
+    
+    /* Animación de aparición con deslizamiento hacia arriba */
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Imagen de la película */
+    .poster-section img {
+      width: 100%; height: auto; aspect-ratio: 2 / 3; object-fit: cover; display: block;
+      border-radius: 16px;
+      box-shadow: 0 18px 44px rgba(0, 0, 0, 0.55);
+    }
+    
+    /* Título de la película en la sección de informacion */
+    .info-section h1 {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 4vw, 3.5rem);
+      font-weight: 700;
+      margin-bottom: 1rem;
+      letter-spacing: 0.05em;
+    }
+    
+    /* Fila de metadatos (año, duración, género, etc.) */
+    .info-meta {
+      display: flex; gap: 2rem;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+      color: var(--gray);
+      font-size: 0.95rem;
+    }
+    .info-meta-item { display: flex; flex-direction: column; gap: 0.3rem; }
+    .info-meta-label {
+      color: var(--gold);
+      font-size: 0.85rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      font-weight: 500;
+    }
+    
+    /* Calificación con estrellas */
+    .rating { display: flex; align-items: center; gap: 0.5rem; font-size: 1.1rem; }
+    .stars { color: var(--gold); }
+    
+    /* Sinopsis de la película */
+    .plot {
+      font-size: 1rem; line-height: 1.8;
+      color: var(--gray-lt);
+      margin-bottom: 2rem;
+    }
+    
+    /* Contenedor de botones (Continuar viendo, Añadir favoritos, etc.) */
+    .action-buttons { display: flex; gap: 1rem; flex-wrap: wrap; }
+    
+    /* Estilos base de los botones  */
+    .btn-primary, .btn-secondary {
+      padding: 0.9rem 2rem;
+      border: none;
+      border-radius: 2px;
+      font-family: var(--font-body);
+      font-size: 0.9rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-weight: 500;
+    }
+    
+    /* Botón primario color rojo con letras blancas */
+    .btn-primary { background: var(--red); color: var(--white); }
+    
+    /* Efecto de Botón */
+    .btn-primary:hover { background: #ff1a26; transform: translateY(-2px); }
+    
+    /* Botón secundario bordes dorados con letras doradas */
+    .btn-secondary {
+      background: transparent;
+      color: var(--gold);
+      border: 1px solid var(--gold);
+    }
+    
+    /* Efecto de Botón */
+    .btn-secondary:hover {
+      background: rgba(201, 168, 76, 0.1);
+      border-color: var(--white);
+      color: var(--white);
+    }
+    /* Pie de página simplificado, sin menú secundario en esta vista */
+    footer {
+      background: rgba(6, 8, 16, 0.5);
+      border-top: 1px solid rgba(201, 168, 76, 0.1);
+      padding: 2rem;
+      text-align: center;
+      color: var(--gray);
+      font-size: 0.85rem;
+      position: relative; z-index: 1;
+    }
+    footer a { color: var(--gold); text-decoration: none; transition: color 0.3s ease; }
+    footer a:hover { color: var(--white); }
+    /* Ajustes responsivos: reproductor más bajo y ficha en una sola columna */
+    @media (max-width: 1024px) {
+      .movie-details { grid-template-columns: 1fr; }
+      .player-section { height: 60vh; }
+    }
+    @media (max-width: 768px) {
+      nav { padding: 0 3%; height: 60px; }
+      .nav-links { gap: 1.5rem; }
+      .nav-links a { font-size: 0.7rem; }
+      .details-section { padding: 2rem 4%; }
+      .player-section { height: 40vh; }
+      .video-player { width: 95%; }
+    }
+/* Botón de cerrar sesión - redirige al loggin */
+.logout-btn:hover { color: var(--red) !important; border-color: var(--red) !important; }
+  
+  /* Ícono de búsqueda que enlaza a Google.com */
+.nav-search {
+  color: var(--gray-lt);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  transition: color 0.3s;
+}
+.nav-search:hover { color: var(--gold); }
+.nav-search svg { width: 20px; height: 20px; }
+
+/* Ícono de redes sociales */
+.nav-social { display: flex; align-items: center; gap: 0.9rem; margin-left: 1.5rem; margin-right: 0.6rem; }
+.nav-social a { color: #BBBBCC; display: flex; transition: color 0.3s; }
+.nav-social a:hover { color: var(--gold); }
+.nav-social svg { width: 18px; height: 18px; }
+  </style>
+<link rel="stylesheet" href="assets/css/cineverse-ui.css">
+</head>
+<body>
+
+<!--  BARRA DE NAVEGACION SUPERIOR -->
+<!-- Barra de navegación principal -->
+<nav id="navbar">
+  <a href="index.html" class="nav-logo" aria-label="CineVerse, ir al inicio">
+    <img src="data:image/svg+xml,%3Csvg width='34' height='34' viewBox='0 0 36 36' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='18' cy='18' r='17' stroke='%23C9A84C' stroke-width='1.2'/%3E%3Ccircle cx='18' cy='18' r='11' stroke='%23C9A84C' stroke-width='0.5' opacity='0.2'/%3E%3Ccircle cx='18' cy='2.8' r='1.6' fill='%23C9A84C'/%3E%3Ccircle cx='18' cy='33.2' r='1.6' fill='%23C9A84C'/%3E%3Ccircle cx='2.8' cy='18' r='1.6' fill='%23C9A84C'/%3E%3Ccircle cx='33.2' cy='18' r='1.6' fill='%23C9A84C'/%3E%3Cpolygon points='14,11.5 14,24.5 25,18' fill='%23E50914'/%3E%3Cpath d='M31.5,5 L32,6.5 L33.5,7 L32,7.5 L31.5,9 L31,7.5 L29.5,7 L31,6.5 Z' fill='%23C9A84C' opacity='0.6'/%3E%3C/svg%3E" alt="" width="34" height="34">
+    <b class="logo-word">Cine<span>Verse</span></b>
+  </a>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="index.html">Inicio</a></li>
+    <li><a href="catalogo.html" class="active" aria-current="page">Catálogo</a></li>
+    <li><a href="SobreNosotros.html">Sobre nosotros</a></li>
+  </ul>
+  <div class="nav-actions">
+    <a href="catalogo.html?buscar=1" class="nav-search" aria-label="Buscar películas" title="Buscar películas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></a>
+    <a href="perfil.html" class="nav-cta" id="navProfile" style="display:none;">Mi perfil</a>
+    <a href="login.html" class="nav-cta" id="navLogin">Inicia sesión</a>
+    <button type="button" class="nav-toggle" aria-label="Abrir menú" aria-expanded="false" aria-controls="navLinks"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+
+<main>
+  <!-- Se carga el iframe del trailer o video -->
+  <section class="player-section" id="playerSection">
+    <div class="video-player" id="videoContainer">
+      <div class="no-trailer" id="noTrailer">
+        <span>🎬</span>
+        <p>Cargando trailer...</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Datos de la película: se completan vía JS al llamar a la API de TMDB -->
+  <section class="details-section">
+    <a href="catalogo.html" class="back-btn">Volver al catálogo</a>
+
+    <div class="movie-details">
+      <div class="poster-section">
+        <img id="moviePoster" src="assets/sin-poster.svg" alt="Poster">
+      </div>
+
+      <div class="info-section">
+        <h1 id="movieTitle">Cargando...</h1>
+
+        <div class="info-meta">
+          <div class="info-meta-item">
+            <span class="info-meta-label">Año</span>
+            <span id="movieYear">—</span>
+          </div>
+          <div class="info-meta-item">
+            <span class="info-meta-label">Duración</span>
+            <span id="movieRuntime">—</span>
+          </div>
+          <div class="info-meta-item">
+            <span class="info-meta-label">Género</span>
+            <span id="movieGenres">—</span>
+          </div>
+          <div class="info-meta-item">
+            <span class="info-meta-label">Valoración</span>
+            <div class="rating">
+              <span class="stars" id="movieRating">★★★★★</span>
+              <span id="movieScore">8.5/10</span>
+            </div>
+          </div>
+        </div>
+
+        <p class="plot" id="moviePlot">Cargando descripción...</p>
+
+        <div class="action-buttons">
+          <button class="btn-primary" id="playFromHere">Ver ahora</button>
+          <button class="btn-secondary" id="addToFavBtn">Añadir a Favoritos</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+
+<!-- FOOTER INFERIOR -->
+<footer class="cv-footer">
+  <div class="cv-footer-grid">
+    <div>
+      <a href="index.html" class="cv-footer-logo">Cine<span>Verse</span></a>
+      <p>Tu universo de películas. Proyecto final de Programación de Software II, Universidad Tecnológica de Panamá, 2026.</p>
+    </div>
+    <div>
+      <h4>Navegación</h4>
+      <ul>
+        <li><a href="index.html">Inicio</a></li>
+        <li><a href="catalogo.html">Catálogo</a></li>
+        <li><a href="SobreNosotros.html">Sobre nosotros</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Mi cuenta</h4>
+      <ul>
+        <li class="cv-guest-only"><a href="registro.html">Regístrate</a></li>
+        <li class="cv-guest-only"><a href="login.html">Inicia sesión</a></li>
+        <li class="cv-user-only"><a href="perfil.html">Mi perfil</a></li>
+        <li class="cv-user-only"><a href="perfil.html">Mis favoritos</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="cv-footer-bottom">
+    <p>© 2026 <span>CineVerse</span> · Proyecto académico · Datos de películas proporcionados por TMDB, sin respaldo ni certificación de TMDB.</p>
+    <a href="login.html" id="logoutBtn" class="logout-btn cv-user-only">Cerrar sesión</a>
+  </div>
+</footer>
+<script src="assets/js/cineverse-ui.js"></script>
+
+<script>
+// Si hay sesión guardada en localStorage, mostramos "Mi Perfil" en vez de "Iniciar Sesión"
+const token = localStorage.getItem('token');
+const user  = JSON.parse(localStorage.getItem('user') || 'null');
+
+if (token && user) {
+  document.getElementById('navLogin').style.display  = 'none';
+  document.getElementById('navProfile').style.display = 'block';
+  document.getElementById('navProfile').textContent   = '' + user.nombre;
+}
+
+// Para algunas películas tenemos el video completo subido a Google Drive;
+// si el id no está aquí, se usa el trailer de YouTube que devuelve TMDB
+const VIDEOS_MAP = {
+  // Películas de dominio público (InternetArchive.org)
+  "653":     { source: "archive", id: "nosferatu_eine_symphonie_des_grauens" }, // Nosferatu (1922)
+  "10331":   { source: "archive", id: "night-of-the-living-dead-1968" },        // La Noche de los Muertos Vivientes (1968)
+  "775":     { source: "archive", id: "ATripToTheMoonGeorgeMelies" },           // Viaje a la Luna (1902)
+};
+
+// Credenciales y base de la API de TMDB para traer los datos de la película
+const API_KEY  = '3eaf8160770351b60f1da8b97fddc6af';
+const BASE_URL = 'https://api.themoviedb.org/3';
+
+const urlParams = new URLSearchParams(window.location.search);
+const movieId   = urlParams.get('id');
+
+let currentPosterPath = '';
+
+// Trae los datos de la película y decide qué video mostrar el de Drive si existe
+// si no el trailer en español y si tampoco hay entonces muestra el trailer en inglés como respaldo
+async function loadMovieDetails() {
+  if (!movieId) {
+    document.getElementById('movieTitle').textContent = 'Película no encontrada';
+    return;
+  }
+//Pide informacion de la película y sus videos en paralelo
+  try {
+    const [movieRes, videosRes] = await Promise.all([
+      fetch(`${BASE_URL}/movie/${movieId}?api_key=${API_KEY}&language=es`),
+      fetch(`${BASE_URL}/movie/${movieId}/videos?api_key=${API_KEY}&language=es`)
+    ]);
+    const movie      = await movieRes.json();
+    const videosData = await videosRes.json();
+    const videoEntry  = VIDEOS_MAP[String(movieId)];;
+
+ // Rellena título, año, duración, géneros, sinopsis y calificación de las peliculas
+    document.title = `${movie.title} — CineVerse`;
+    document.getElementById('movieTitle').textContent    = movie.title;
+    document.getElementById('movieYear').textContent     = movie.release_date ? movie.release_date.split('-')[0] : '—';
+    document.getElementById('movieRuntime').textContent  = movie.runtime ? `${movie.runtime} min` : '—';
+    document.getElementById('movieGenres').textContent   = movie.genres.map(g => g.name).join(', ') || '—';
+    document.getElementById('moviePlot').textContent     = movie.overview || 'Sin descripción disponible.';
+    document.getElementById('movieScore').textContent    = (movie.vote_average ? movie.vote_average.toFixed(1) : 'N/A') + '/10';
+
+    if (movie.poster_path) { // Carga el póster si existe
+      currentPosterPath = movie.poster_path;
+      document.getElementById('moviePoster').src = `https://image.tmdb.org/t/p/w500${movie.poster_path}`;
+    }
+
+    const container = document.getElementById('videoContainer');
+      // Prioridad 1: video propio en Google Drive
+    if (videoEntry && videoEntry.source === "drive") {
+        container.innerHTML = `
+          <iframe
+            src="https://drive.google.com/file/d/${videoEntry.id}/preview"
+            allow="autoplay; fullscreen"
+            allowfullscreen>
+          </iframe>`;
+       // Prioridad 2: video publico en Archive.org
+      } else if (videoEntry && videoEntry.source === "archive") {
+        container.innerHTML = `
+          <iframe
+            src="https://archive.org/embed/${videoEntry.id}"
+            allow="autoplay; fullscreen"
+            allowfullscreen>
+          </iframe>`;
+      } else {
+      // Prioridad 3: busca tráiler en español desde TMDB
+      const videos = videosData.results || [];
+      let trailer  = videos.find(v => v.type === 'Trailer' && v.site === 'YouTube')
+                  || videos.find(v => v.site === 'YouTube');
+      // Si no hay en español entonces intenta reproducirlo en inglés
+      if (!trailer) {
+        const enRes  = await fetch(`${BASE_URL}/movie/${movieId}/videos?api_key=${API_KEY}`);
+        const enData = await enRes.json();
+        trailer = (enData.results || []).find(v => v.type === 'Trailer' && v.site === 'YouTube')
+               || (enData.results || []).find(v => v.site === 'YouTube');
+      }
+      // Muestra el tráiler de YouTube o un mensaje de que no hay video disponible
+      if (trailer) {
+        container.innerHTML = `
+          <iframe
+            src="https://www.youtube.com/embed/${trailer.key}?autoplay=1&rel=0&modestbranding=1"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+            allowfullscreen>
+          </iframe>`;
+      } else {
+        container.innerHTML = `
+          <div class="no-trailer">
+            <span>🎬</span>
+            <p>Video no disponible para esta película</p>
+          </div>`;
+      }
+    }
+ // Maneja errores de carga
+  } catch (error) {
+    console.error('Error loading movie:', error);
+    document.getElementById('movieTitle').textContent = 'Error al cargar';
+  }
+}
+
+// Lleva el scroll hacia el reproductor con una breve animación en el botón
+document.getElementById('playFromHere').addEventListener('click', () => {
+  const btn           = document.getElementById('playFromHere');
+  const playerSection = document.getElementById('playerSection');
+
+  // Animación del botón
+  btn.textContent  = 'Reproduciendo...';
+  btn.style.opacity = '0.75';
+  btn.disabled      = true;
+
+  setTimeout(() => {
+    playerSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    setTimeout(() => {
+      btn.textContent  = 'Ver ahora';
+      btn.style.opacity = '1';
+      btn.disabled      = false;
+    }, 1000);
+  }, 300);
+});
+
+// Guarda la película en favoritos vía favoritos.jsp y si no hay sesión, manda a loggin
+document.getElementById('addToFavBtn').addEventListener('click', async () => {
+  if (!user) {
+    CV.toast('Inicia sesión para guardar tus favoritos');
+    window.location.href = 'login.html';
+    return;
+  }
+
+// Deshabilita el botón y muestra estado de carga mientras se añade a favoritos
+  const btn = document.getElementById('addToFavBtn');
+  btn.disabled    = true;
+  btn.textContent = 'Añadiendo...';
+
+  try { // Envía la película actual al backend para guardarla como favorito
+    const response = await fetch('api/favoritos.jsp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        movieId:    parseInt(movieId),
+        movieTitle: document.getElementById('movieTitle').textContent,
+        posterPath: currentPosterPath,
+        usuarioId:  user.id
+      })
+    });
+
+    const data = await response.json();
+    // Si se guardó bien entonces marca el botón como "En Favoritos"
+    if (response.ok) {
+      btn.textContent           = 'En favoritos';
+      if (data.action !== 'exists') CV.toast(`«${document.getElementById('movieTitle').textContent}» se añadió a tus favoritos`);
+      btn.style.color           = 'var(--gold)';
+      btn.style.borderColor     = 'var(--gold)';
+      btn.style.backgroundColor = 'rgba(201,168,76,0.1)';
+      if (data.action === 'exists') {
+        CV.toast(`«${document.getElementById('movieTitle').textContent}» ya estaba en tus favoritos`);
+      }
+    } else { // Si no entonces manda error del servidor y reactiva el botón
+      CV.toast(data.message || 'No se pudo añadir a favoritos', true);
+      btn.disabled    = false;
+      btn.textContent = 'Añadir a Favoritos';
+    }
+ // Si existe error inesperado entonces manda error de conexión y reactiva el botón
+  } catch (error) {
+    console.error('Error:', error);
+    CV.toast('Error al conectarse al servidor', true);
+    btn.disabled    = false;
+    btn.textContent = 'Añadir a Favoritos';
+  }
+});
+
+// Arranca la carga de datos en cuanto el script se ejecuta
+loadMovieDetails();
+
+// Si la película ya está en favoritos, el botón lo indica desde el inicio
+CV.loadFavIds().then(ids => {
+  if (!ids.has(Number(movieId))) return;
+  const btn = document.getElementById('addToFavBtn');
+  btn.textContent = 'En favoritos';
+  btn.style.color = 'var(--gold)'; btn.style.borderColor = 'var(--gold)'; btn.style.backgroundColor = 'rgba(201,168,76,0.1)';
+});
+</script>
+
+</body>
+</html>
