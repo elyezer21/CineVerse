@@ -1,4 +1,4 @@
-# CineVerse — Proyecto Final Programación de Software II (UTP)
+# CineVerse — Proyecto Desarrollado (UTP)
 
 Plataforma web de películas: catálogo con búsqueda y filtros (API de TMDB), reproductor de tráileres,
 registro e inicio de sesión, favoritos por usuario y eliminación de cuenta.
